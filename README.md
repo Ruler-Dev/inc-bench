@@ -9,13 +9,13 @@ Serve soprattutto a dimostrare una tesi:
 
 Usa solo la libreria standard di Python, senza dipendenze. Parla con qualsiasi server **OpenAI-compatibile**: LM Studio, Ollama, llama.cpp, vLLM, SGLang.
 
-La nota tecnica con metodologia, risultati e analisi degli errori è in [`docs/`](docs/).
+La nota tecnica con metodologia, risultati e analisi degli errori è in [`docs/open-harness_nota_tecnica.pdf`](docs/open-harness_nota_tecnica.pdf).
 
 ---
 
 ## Avvio rapido
 
-Serve Python 3.10 o successivo. Nessuna dipendenza da installare.
+Serve Python 3.11 o successivo. Nessuna dipendenza da installare.
 
 ```bash
 git clone https://github.com/Ruler-Dev/open-harness.git
@@ -432,3 +432,9 @@ I run vengono salvati su disco **mentre girano** (ogni ~3 s, stato "in corso"), 
 - **Una nuova skill:** crea `skills/<nome>/SKILL.md` e `skills/<nome>/scripts/<script>.py` (input JSON su stdin, output JSON su stdout).
 - **Un altro server:** aggiungi un provider (scheda **Provider e dati** o `providers.json`). Il formato è lo stesso.
 - **I tuoi dati:** una cartella in `datasets/` (vedi sopra e `datasets/README.md`).
+
+---
+
+## Licenza
+
+MIT, vedi [`LICENSE`](LICENSE). La nota tecnica in `docs/` incorpora i font Familjen Grotesk, DM Sans e JetBrains Mono (SIL Open Font License).
