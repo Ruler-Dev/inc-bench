@@ -1,6 +1,6 @@
 @echo off
-rem open-harness: avvia la web UI. Se il processo si chiude da solo, lo riavvia e annota il motivo in data\webui_eventi.log.
-title open-harness web UI
+rem inc-bench: avvia la web UI. Se il processo si chiude da solo, lo riavvia e annota il motivo in data\webui_eventi.log.
+title inc-bench web UI
 cd /d "%~dp0"
 if not exist data mkdir data
 rem Python: variabile PYTHON se impostata, altrimenti il launcher "py", altrimenti "python" nel PATH

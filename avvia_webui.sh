@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# open-harness: avvia la web UI. Se il processo si chiude da solo, lo riavvia e annota il motivo in data/webui_eventi.log.
+# inc-bench: avvia la web UI. Se il processo si chiude da solo, lo riavvia e annota il motivo in data/webui_eventi.log.
 cd "$(dirname "$0")" || exit 1
 mkdir -p data
 PY="${PYTHON:-python3}"

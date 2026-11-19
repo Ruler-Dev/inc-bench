@@ -1,4 +1,4 @@
-# open-harness
+# inc-bench
 
 Uno scheletro di **harness agentico** per **modelli locali**, scritto per essere letto e per insegnare.
 Mostra i pezzi che stanno dentro Claude Code, Codex, Cline e simili: loop, tool call, skill, sub-agenti e schemi JSON forzati.
@@ -9,7 +9,7 @@ Serve soprattutto a dimostrare una tesi:
 
 Usa solo la libreria standard di Python, senza dipendenze. Parla con qualsiasi server **OpenAI-compatibile**: LM Studio, Ollama, llama.cpp, vLLM, SGLang.
 
-La nota tecnica con metodologia, risultati e analisi degli errori è in [`docs/open-harness_nota_tecnica.pdf`](docs/open-harness_nota_tecnica.pdf).
+La nota tecnica con metodologia, risultati e analisi degli errori è in [`docs/inc-bench_nota_tecnica.pdf`](docs/inc-bench_nota_tecnica.pdf).
 
 ---
 
@@ -18,8 +18,8 @@ La nota tecnica con metodologia, risultati e analisi degli errori è in [`docs/o
 Serve Python 3.11 o successivo. Nessuna dipendenza da installare.
 
 ```bash
-git clone https://github.com/Ruler-Dev/open-harness.git
-cd open-harness
+git clone https://github.com/Ruler-Dev/inc-bench.git
+cd inc-bench
 python webui.py                 # apre http://127.0.0.1:8765
 ```
 

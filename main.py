@@ -1,5 +1,5 @@
 """
-open-harness - demo didattiche.
+inc-bench - demo didattiche.
 
     python main.py anatomia   # com'e' fatta una tool call, byte per byte
     python main.py agente     # loop + skill + script + sub-agente

@@ -1,5 +1,5 @@
 """
-Web UI di open-harness - solo libreria standard.
+Web UI di inc-bench - solo libreria standard.
 
     python webui.py            -> http://127.0.0.1:8765
 
@@ -494,7 +494,7 @@ def main():
     args = ap.parse_args()
     srv = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     url = f"http://127.0.0.1:{args.port}"
-    print(f"open-harness web UI su {url}  (Ctrl+C per uscire)", flush=True)
+    print(f"inc-bench web UI su {url}  (Ctrl+C per uscire)", flush=True)
     if not args.no_browser:
         webbrowser.open(url)
     try:
