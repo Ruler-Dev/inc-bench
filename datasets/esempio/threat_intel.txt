@@ -1,0 +1,8 @@
+sha256=687a48509d9b62317d45d8efd56ce8ea19597b5aa7a8f6366a35df59e2aa7a5d famiglia=KernelPwn tipo=exploit fonte=feed-B confidenza=62
+sha256=a2b4d215c3c5707dfe292238fbfbe6022011bc8ae7bf9a9664849eb55096ccf2 famiglia=- tipo=benign fonte=feed-A confidenza=10
+sha256=e91e70af224af354e4907635201910c629b496640f52361d82f1240d4e5c6dd2 famiglia=- tipo=benign fonte=feed-A confidenza=10
+sha256=ccd9f2af339c5a7543fd46ffd03459a42ca723c48f4ed44214aaaefe153251c9 famiglia=- tipo=benign fonte=feed-A confidenza=10
+sha256=d020baee95fc7389ccd66756583e26a42e22fd39f31e24486323c57fa197b954 famiglia=- tipo=benign fonte=feed-A confidenza=10
+sha256=b2835498be80793eb0f1bb1d8e10fed6d2d072230b20ee0f85050a17d2e1ed4d famiglia=- tipo=benign fonte=feed-A confidenza=10
+sha256=ddda17a36779de0d25c1df67987d616d2462c274abbf66c7680aee2a466bd06f famiglia=- tipo=benign fonte=feed-A confidenza=10
+sha256=bad4c2880bf56ed8b93c2989c399fd7fb75db71ea4531fe9b48f653e7b1bcb6b famiglia=- tipo=benign fonte=feed-A confidenza=10

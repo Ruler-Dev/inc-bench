@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# dati locali: storico delle run, log, fattura generata, output
+data/
+
+# configurazione personale (provider e chiavi)
+providers.json
+.env
+*.env
+
+# dataset dell'utente: solo l'esempio sintetico è versionato
+datasets/*
+!datasets/README.md
+!datasets/esempio/
+
+# editor / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/

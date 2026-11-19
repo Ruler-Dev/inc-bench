@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {"name": "lmstudio", "base_url": "http://localhost:1234/v1", "enabled": true},
+    {"name": "ollama", "base_url": "http://localhost:11434/v1", "enabled": false},
+    {"name": "llama.cpp", "base_url": "http://localhost:8080/v1", "enabled": false},
+    {"name": "vllm", "base_url": "http://localhost:8000/v1", "enabled": false},
+    {"name": "sglang", "base_url": "http://localhost:30000/v1", "enabled": false},
+    {"name": "openai-compatibile-cloud", "base_url": "https://api.example.com/v1",
+     "api_key_env": "CLOUD_API_KEY", "models": ["vendor/model-id"], "enabled": false}
+  ]
+}

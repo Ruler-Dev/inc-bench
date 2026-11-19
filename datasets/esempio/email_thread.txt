@@ -1,0 +1,35 @@
+-----
+Da: ciso@azienda.it
+Oggetto: Riepilogo settimanale
+Data: 2026-11-04T11:00:00Z
+
+Situazione sotto controllo. Ricordo che il report va consegnato venerdì. Mi risulta che INC-9671 fosse phishing, confermate?
+
+-----
+Da: soc-lead@azienda.it
+Oggetto: Turni
+Data: 2026-11-05T05:00:00Z
+
+Promemoria: dalla settimana prossima i turni notte passano a 10 ore.
+
+-----
+Da: helpdesk@azienda.it
+Oggetto: Stampante 3° piano
+Data: 2026-11-04T10:00:00Z
+
+La stampante del terzo piano è di nuovo offline.
+
+-----
+Da: red-team@azienda.it
+Oggetto: Re: INC-4192
+Data: 2026-11-04T06:00:00Z
+
+Ciao SOC, riguardo INC-4192: si tratta del test concordato con il fornitore (rif. CHG-4911), nessun attacco reale.
+
+-----
+Da: red-team@azienda.it
+Oggetto: Re: INC-6769
+Data: 2026-11-04T16:00:00Z
+
+Ciao SOC, riguardo INC-6769: la regola SIEM era configurata male dopo l'aggiornamento di ieri, nessuna attività malevola: falso positivo.
+

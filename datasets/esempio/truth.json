@@ -1,0 +1,28 @@
+{
+ "incidents": [
+  {
+   "id": "INC-0921",
+   "category": "privilege_escalation"
+  },
+  {
+   "id": "INC-3106",
+   "category": "data_exfiltration"
+  },
+  {
+   "id": "INC-4192",
+   "category": "false_positive"
+  },
+  {
+   "id": "INC-4773",
+   "category": "privilege_escalation"
+  },
+  {
+   "id": "INC-6769",
+   "category": "false_positive"
+  },
+  {
+   "id": "INC-9671",
+   "category": "lateral_movement"
+  }
+ ]
+}

@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>open-harness</title>
+<style>
+:root {
+  --bg: #0f1115; --panel: #171a21; --panel2: #1e222b; --line: #2a2f3a;
+  --text: #e6e8ee; --muted: #8b93a7; --accent: #7c9cff;
+  --yel: #f2c14e; --grn: #4fd18b; --red: #ff6b6b; --mag: #c792ea; --cyan: #5ccfe6;
+  --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { display: flex; align-items: center; gap: 16px; padding: 10px 20px;
+  border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+.logo { font-weight: 700; font-size: 16px; letter-spacing: .3px; }
+.logo span { color: var(--accent); }
+.settings { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap; }
+label.s { color: var(--muted); font-size: 12px; }
+select, input, textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 8px; font: inherit; }
+textarea { font-family: var(--mono); font-size: 12.5px; width: 100%; resize: vertical; }
+input[type=number] { width: 80px; }
+button { background: var(--accent); color: #0b0d12; border: 0; border-radius: 6px; padding: 7px 14px;
+  font-weight: 600; cursor: pointer; font: inherit; font-weight: 600; }
+button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+button:disabled { opacity: .5; cursor: wait; }
+.pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.pill.ok { color: var(--grn); border-color: #2c6b4a; } .pill.ko { color: var(--red); border-color: #6b2c2c; }
+nav { display: flex; gap: 4px; padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--panel); }
+nav button { background: none; color: var(--muted); border-radius: 0; border-bottom: 2px solid transparent; padding: 10px 14px; }
+nav button.active { color: var(--text); border-bottom-color: var(--accent); }
+main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.tab { display: none; } .tab.active { display: block; }
+.intro { color: var(--muted); margin: 0 0 16px; max-width: 900px; }
+.intro b { color: var(--text); }
+.controls { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin-bottom: 16px; }
+.controls .grow { flex: 1; min-width: 300px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field > span { font-size: 12px; color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 8px 0; }
+.card h4 { margin: 0 0 6px; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--panel2); color: var(--muted); }
+pre { margin: 6px 0 0; padding: 10px; background: #0b0d12; border-radius: 6px; overflow: auto;
+  font: 12.5px/1.45 var(--mono); max-height: 420px; white-space: pre-wrap; word-break: break-word; }
+.k { color: var(--cyan); } .str { color: #c3e88d; } .num { color: #f78c6c; } .bool { color: var(--mag); }
+.ev-task { border-left: 3px solid var(--mag); }
+.ev-model { border-left: 3px solid var(--cyan); }
+.ev-call { border-left: 3px solid var(--yel); }
+.ev-result { border-left: 3px solid var(--muted); }
+.ev-result.err, .ev-error { border-left: 3px solid var(--red); }
+.ev-final { border-left: 3px solid var(--grn); }
+.sub { margin: 8px 0 8px 28px; padding: 6px 0 6px 14px; border-left: 2px dashed var(--mag); }
+.sub-label { color: var(--mag); font-size: 12px; font-weight: 600; }
+details summary { cursor: pointer; color: var(--muted); font-size: 12px; margin-top: 6px; }
+.raw { display: none; } body.show-raw .raw { display: block; }
+.stats { display: flex; gap: 18px; color: var(--muted); font-size: 13px; margin: 6px 0 10px; }
+.stats b { color: var(--text); }
+.notice { background: #2a2414; border: 1px solid #5c4a1a; color: #f2d58a; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.answer { white-space: pre-wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+.step-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #0b0d12; font-size: 12px; font-weight: 700; }
+.note { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); font-family: var(--mono); }
+th { color: var(--muted); font-family: inherit; font-weight: 500; }
+td.bad { color: var(--red); } td.good { color: var(--grn); }
+.ok-t { color: var(--grn); font-weight: 700; } .ko-t { color: var(--red); font-weight: 700; }
+.bars { display: grid; grid-template-columns: 150px 1fr 70px; gap: 6px 10px; align-items: center; font-size: 13px; }
+.bar { height: 16px; border-radius: 4px; background: var(--panel2); overflow: hidden; }
+.bar > div { height: 100%; transition: width .4s; }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--muted); border-top-color: transparent;
+  border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.loop .box { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.loop .arrow { color: var(--muted); }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 1000px) { .grid3 { grid-template-columns: 1fr; } }
+.mcard { margin: 0; }
+.mtag { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; font-weight: 800; color: #0b0d12; }
+.mtag.A { background: var(--yel); } .mtag.B { background: var(--cyan); } .mtag.C { background: var(--grn); }
+.flow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--muted); font-size: 12px; margin: 4px 0; }
+.chip { padding: 2px 7px; border-radius: 99px; font-size: 11.5px; border: 1px solid var(--line); }
+.chip.llm { color: var(--mag); border-color: #5b3f73; } .chip.py { color: var(--cyan); border-color: #2c5866; }
+.blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-top: 6px; }
+.block { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; }
+.block.run { border-color: var(--accent); } .block.ok { border-color: #2c6b4a; } .block.ko { border-color: #6b2c2c; }
+.block b { font-size: 12.5px; }
+.block .ln { color: var(--muted); margin-top: 2px; }
+.agentlog { max-height: 260px; overflow: auto; font: 12px/1.5 var(--mono); color: var(--muted); }
+.agentlog .r-estrattore { color: var(--mag); } .agentlog .r-validatore { color: var(--cyan); }
+.agentlog .r-correttore { color: var(--yel); } .agentlog .r-giudice { color: #ff9e64; }
+.tablewrap { overflow-x: auto; }
+#lj_table td, #lj_table th { white-space: nowrap; }
+#lj_table tbody tr.res { cursor: pointer; } #lj_table tbody tr.res:hover { background: var(--panel2); }
+tr.detail td { white-space: normal !important; font-size: 12px; color: var(--muted); }
+.runbanner { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #172036; border: 1px solid #2d3d66;
+  border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; font-size: 13px; }
+.runbanner.replay { background: #1f1830; border-color: #4b3a6e; }
+.runbanner .grow { flex: 1; }
+.stopbtn { background: var(--red); color: #fff; border: 0; }
+.stopbtn:disabled { opacity: .6; }
+.mbadge { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--panel2); border: 1px solid var(--line); }
+.mbadge.mock { color: var(--muted); } .mbadge.local { color: var(--grn); }
+#h_table td { white-space: nowrap; vertical-align: top; }
+tr.hrow { cursor: pointer; } tr.hrow:hover { background: var(--panel2); }
+#h_table td.wrap { white-space: normal; min-width: 220px; }
+.small { font-size: 11.5px; color: var(--muted); }
+button.mini { padding: 3px 10px; font-size: 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 1100px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+.mtag.S { background: #9aa3b8; }
+.modelpick { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.modelpick label { font-size: 12.5px; color: var(--text); }
+.lanes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.lane { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; }
+.lane b { font-family: var(--mono); }
+.calls { max-height: 420px; overflow: auto; }
+.calls tr { cursor: pointer; } .calls tr:hover { background: var(--panel2); } .calls tr.sel { background: #23304d; }
+.calls td { white-space: nowrap; }
+.calls td.resp { max-width: 340px; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.calldetail { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+@media (max-width: 1000px) { .calldetail { grid-template-columns: 1fr; } }
+.calldetail h5 { margin: 6px 0 2px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.cmpgrid { display: grid; grid-template-columns: 200px repeat(3, 1fr) 90px; gap: 4px 10px; align-items: center; font-size: 12.5px; }
+.cmpgrid .h { color: var(--muted); font-size: 11.5px; }
+.codegrid { display: grid; grid-template-columns: 300px 1fr; gap: 12px; }
+@media (max-width: 900px) { .codegrid { grid-template-columns: 1fr; } }
+.filelist { max-height: 760px; overflow: auto; }
+.fitem { padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; }
+.fitem:hover, .fitem.sel { background: var(--panel2); }
+.fitem code { color: var(--text); } .fitem .small { display: block; }
+.outline { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px; }
+.outline span { font: 11.5px var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--panel2); cursor: pointer; color: var(--cyan); }
+.code { margin: 0; padding: 0; background: #0b0d12; border-radius: 6px; max-height: 700px; overflow: auto; font: 12.5px/1.5 var(--mono); }
+.code div { display: flex; white-space: pre; }
+.code .ln { color: #4b5263; min-width: 44px; text-align: right; padding-right: 10px; user-select: none; }
+.code .hl { background: #2a2414; }
+.py-k { color: var(--mag); } .py-s { color: #c3e88d; } .py-c { color: #6b7389; font-style: italic; } .py-d { color: var(--cyan); }
+.prompt-card pre { max-height: 300px; }
+.concept h3 { margin: 4px 0 6px; font-size: 15px; }
+.concept p { margin: 0; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">open<span>-harness</span></div>
+  <div class="settings">
+    <label class="s">Backend</label>
+    <select id="backend">
+      <option value="mock">mock (finto, offline)</option>
+      <option value="local">local (LM Studio / Ollama / vLLM)</option>
+    </select>
+    <input id="base_url" size="44" title="Uno o più server OpenAI-compatibili, separati da virgola. Il valore predefinito sono i provider attivi (scheda Provider e dati).">
+    <select id="model" style="max-width:260px"></select>
+    <button class="ghost" id="refresh" title="Ricarica elenco modelli">↻</button>
+    <span class="pill" id="status">—</span>
+    <label class="s"><input type="checkbox" id="rawtoggle"> JSON grezzo</label>
+  </div>
+</header>
+<nav>
+  <button data-tab="agente" class="active">Agente</button>
+  <button data-tab="anatomia">Anatomia tool call</button>
+  <button data-tab="json">Schema JSON</button>
+  <button data-tab="confronto">Confronto: LLM vs Python</button>
+  <button data-tab="lunghi">JSON lunghi · A/B/C</button>
+  <button data-tab="incidenti">Incidenti SOC · S/A/B/C</button>
+  <button data-tab="codice">Codice & prompt</button>
+  <button data-tab="storico">Storico</button>
+  <button data-tab="config">Provider e dati</button>
+  <button data-tab="concetti">Concetti</button>
+</nav>
+<main>
+
+<!-- ============================== AGENTE -->
+<section class="tab active" id="tab-agente">
+  <p class="intro">Il <b>loop agentico</b> in diretta: il modello chiede un tool, l'harness lo esegue in Python
+    e rimanda il risultato, finché il modello non risponde senza tool call. I <b>sub-agenti</b> sono riquadri
+    tratteggiati: hanno un contesto vuoto e meno tool.</p>
+  <div class="controls">
+    <label class="field grow"><span>Task</span><textarea id="task" rows="3"></textarea></label>
+    <label class="field"><span>Max passi</span><input type="number" id="max_steps" value="10" min="1" max="30"></label>
+    <label class="field"><span>max_tokens</span><input type="number" id="ag_maxtok" value="8192" min="256" step="1024" title="Tetto di token per ogni risposta del modello"></label>
+    <label class="field"><span>Righe fattura</span><input type="number" id="ag_righe" value="40" min="1" max="500"></label>
+    <button id="run-agente">Esegui</button>
+  </div>
+  <details class="card" id="sysbox" hidden><summary>System prompt e tool disponibili</summary><pre id="syspre"></pre></details>
+  <div class="stats" id="ag-stats"></div>
+  <div id="timeline"></div>
+</section>
+
+<!-- ============================== ANATOMIA -->
+<section class="tab" id="tab-anatomia">
+  <p class="intro">Una tool call, <b>byte per byte</b>. Il modello non esegue niente: vede uno schema, scrive un JSON
+    di richiesta, e l'harness fa tutto il resto.</p>
+  <div class="controls">
+    <label class="field grow"><span>Messaggio utente</span><input id="an_prompt" value="Quanta IVA pago su 1250 euro? Usa il tool."></label>
+    <button id="run-anatomia">Esegui</button>
+  </div>
+  <div id="anat"></div>
+</section>
+
+<!-- ============================== JSON -->
+<section class="tab" id="tab-json">
+  <p class="intro"><b>Forzare uno schema</b>: solo con il prompt (parse + validazione + retry) oppure con il
+    <b>constrained decoding</b> lato server (<code>response_format: json_schema</code>, lo stesso principio di
+    XGrammar/GBNF). Il secondo garantisce la <b>forma</b>, ma nessuno dei due garantisce la <b>verità</b>.</p>
+  <div class="grid2">
+    <label class="field"><span>Testo da cui estrarre</span><textarea id="js_text" rows="9"></textarea></label>
+    <label class="field"><span>JSON Schema</span><textarea id="js_schema" rows="9"></textarea></label>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <label class="s"><input type="checkbox" id="m_prompt" checked> prompt</label>
+    <label class="s"><input type="checkbox" id="m_constrained" checked> constrained</label>
+    <button id="run-json">Esegui</button>
+  </div>
+  <div class="grid2" id="jsres"></div>
+</section>
+
+<!-- ============================== CONFRONTO -->
+<section class="tab" id="tab-confronto">
+  <p class="intro">Stessa fattura, due approcci. <b>A</b>: il modello fa i conti e risponde con un JSON (schema forzato).
+    <b>B</b>: il modello sceglie solo il tool, e i numeri li calcola uno script Python deterministico.
+    Lo schema di A è sempre rispettato: <b>la forma non è la verità</b>.</p>
+  <div class="controls">
+    <label class="field"><span>Righe fattura</span><input type="number" id="cf_righe" value="40" min="1" max="500"></label>
+    <label class="field"><span>max_tokens</span><input type="number" id="cf_maxtok" value="24000" min="1024" step="1024" title="A con molte righe ragiona a lungo: con un tetto basso il JSON viene troncato"></label>
+    <label class="field"><span>Prove per metodo</span><input type="number" id="cf_n" value="3" min="1" max="50"></label>
+    <label class="s"><input type="checkbox" id="cf_solo_b"> salta A (lento con modelli veri)</label>
+    <button id="run-confronto">Esegui</button>
+    <span class="note" id="cf_hint"></span>
+  </div>
+  <div id="cf_truth"></div>
+  <div class="card" id="cf_summary" hidden><h4>Riepilogo</h4><div class="bars" id="bars"></div></div>
+  <div class="grid2">
+    <div class="card"><h4>A · il modello calcola <span class="tag">response_format json_schema</span></h4>
+      <table><thead><tr><th>#</th><th>esito</th><th>righe</th><th>imponibile</th><th>totale</th><th>s</th><th>token</th></tr></thead><tbody id="tA"></tbody></table></div>
+    <div class="card"><h4>B · il modello chiama Python <span class="tag">esegui_script</span></h4>
+      <table><thead><tr><th>#</th><th>esito</th><th>turni LLM</th><th>imponibile</th><th>totale</th><th>s</th><th>token</th></tr></thead><tbody id="tB"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============================== JSON LUNGHI -->
+<section class="tab" id="tab-lunghi">
+  <p class="intro">Compilare un <b>JSON lungo</b> da un'email d'ordine scritta a mano: una voce per riga (6 campi) più i totali.
+    Tre strategie a confronto. I <b>validatori</b> (Python) controllano tutti gli output senza conoscere la verità.
+    Il <b>giudice LLM</b> è un agente revisore: aiuta, ma il benchmark misura anche quanto sbaglia.</p>
+  <div class="grid3">
+    <div class="card mcard"><h4><span class="mtag A">A</span> Tutto al modello</h4>
+      <div class="flow"><span class="chip llm">LLM: estrae + calcola tutto</span></div>
+      <p class="note">1 chiamata. JSON forzato dallo schema: la forma è garantita, i valori no.</p></div>
+    <div class="card mcard"><h4><span class="mtag B">B</span> Modello + Python</h4>
+      <div class="flow"><span class="chip llm">LLM: estrae</span>→<span class="chip py">Python: calcola</span></div>
+      <p class="note">1 chiamata. I conti sono giusti, ma l'estrazione di una lista lunga in un colpo può perdere o sbagliare righe.</p></div>
+    <div class="card mcard"><h4><span class="mtag C">C</span> Pipeline multi-agente</h4>
+      <div class="flow"><span class="chip py">Splitter</span>→<span class="chip llm">Estrattori ×K ∥</span>→<span class="chip py">Validatori</span>→<span class="chip llm">Correttore</span>→<span class="chip llm">Giudice</span>→<span class="chip py">Calcolatore</span></div>
+      <p class="note">JSON piccoli in parallelo. Ogni valore deve comparire nel testo, altrimenti la riga torna al correttore con l'errore esatto.</p></div>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <label class="field"><span>Righe d'ordine</span><input type="number" id="lj_righe" value="40" min="5" max="300"></label>
+    <label class="field"><span>Prove per metodo</span><input type="number" id="lj_n" value="1" min="1" max="20"></label>
+    <label class="field"><span>Righe per blocco (C)</span><input type="number" id="lj_chunk" value="10" min="2" max="50"></label>
+    <label class="field"><span>max_tokens</span><input type="number" id="lj_maxtok" value="24000" min="1024" step="1024"></label>
+    <div class="field"><span>Metodi</span><div>
+      <label class="s"><input type="checkbox" id="lj_A" checked> A</label>
+      <label class="s"><input type="checkbox" id="lj_B" checked> B</label>
+      <label class="s"><input type="checkbox" id="lj_C" checked> C</label></div></div>
+    <div class="field"><span>LLM-as-judge</span><div>
+      <label class="s"><input type="checkbox" id="lj_judge" checked> in C</label>
+      <label class="s"><input type="checkbox" id="lj_judge_ab"> giudica anche A e B</label></div></div>
+    <button id="run-lunghi">Esegui benchmark</button>
+  </div>
+  <div id="lj_truth"></div>
+  <div class="card" id="lj_pipe" hidden>
+    <h4>Pipeline C in diretta <span class="tag" id="lj_pipe_run"></span></h4>
+    <div class="blocks" id="lj_blocks"></div>
+    <details><summary>log degli agenti</summary><div class="agentlog" id="lj_log"></div></details>
+  </div>
+  <div class="card" id="lj_bench" hidden>
+    <h4>Benchmark</h4>
+    <div class="tablewrap"><table id="lj_table"><thead><tr>
+      <th>metodo</th><th>esito</th><th>campi ok</th><th>righe ok</th><th>mancanti</th><th>inventate</th><th>totali</th>
+      <th>tempo</th><th>token</th><th>chiamate LLM</th><th>validatori<br><small>trovati / falsi / mancati</small></th>
+      <th>giudice LLM<br><small>trovati / falsi / mancati</small></th><th>correzioni</th>
+    </tr></thead><tbody id="lj_rows"></tbody></table></div>
+    <p class="note">Clicca una riga per vedere gli errori reali e cosa hanno segnalato i validatori. <i>trovati</i> = righe sbagliate segnalate,
+      <i>falsi</i> = righe giuste segnalate per errore, <i>mancati</i> = righe sbagliate non segnalate.</p>
+  </div>
+  <div class="grid2" id="lj_summary" hidden>
+    <div class="card"><h4>Correttezza e costo per metodo</h4><div class="bars" id="lj_bars"></div></div>
+    <div class="card"><h4>Chi si accorge degli errori?</h4><div id="lj_detect"></div></div>
+  </div>
+</section>
+
+<!-- ============================== INCIDENTI SOC -->
+<section class="tab" id="tab-incidenti">
+  <p class="intro">Classificare <b>incidenti di cybersecurity</b> da un <b>corpus di documenti enormi</b>: log SIEM, alert EDR,
+    threat intel, inventario, note degli analisti, email e policy. Il corpus contiene trappole: riclassificazioni successive,
+    falsi positivi dichiarati via email, righe che citano un incidente senza appartenergli, frasi che negano un collegamento.
+    I campi sono valutati per <b>tipo</b>: <span class="chip py">deterministici ×6</span> (si calcolano dai log),
+    <span class="chip llm">semantici ×1</span> (la categoria: bisogna capire il testo),
+    <span class="chip py">derivati ×2</span> (severità e MITRE: regola fissa sulla categoria).</p>
+  <div class="grid4">
+    <div class="card mcard"><h4><span class="mtag S">S</span> Solo script</h4>
+      <div class="flow"><span class="chip py">regex + regole</span><span class="chip py">parole chiave</span></div>
+      <p class="note">0 chiamate LLM. Deterministici al 100%; la categoria con parole chiave (solo i nomi delle categorie) indovina solo quando il testo la nomina.</p></div>
+    <div class="card mcard"><h4><span class="mtag A">A</span> Solo LLM</h4>
+      <div class="flow"><span class="chip llm">tutto il corpus → JSON</span></div>
+      <p class="note">1 chiamata con l'intero corpus. Se non entra nel contesto del modello, fallisce.</p></div>
+    <div class="card mcard"><h4><span class="mtag B">B</span> LLM per incidente</h4>
+      <div class="flow"><span class="chip py">retrieval</span>→<span class="chip llm">LLM compila tutto ∥</span></div>
+      <p class="note">Contesto piccolo per ogni incidente, ma l'LLM conta, ordina date e applica la policy. Nessun controllo.</p></div>
+    <div class="card mcard"><h4><span class="mtag C">C</span> Ibrido multi-agente</h4>
+      <div class="flow"><span class="chip py">script: 6 campi</span>→<span class="chip py">retrieval</span>→<span class="chip llm">classificatore ×2 ∥</span>→<span class="chip llm">arbitro</span>→<span class="chip py">validatori</span>→<span class="chip llm">correttore</span>→<span class="chip llm">giudice</span>→<span class="chip py">severità + MITRE</span></div>
+      <p class="note">L'LLM decide solo la categoria, con una citazione; due opinioni indipendenti e un arbitro se non concordano.</p></div>
+  </div>
+  <div class="controls" style="margin-top:10px">
+    <label class="field"><span>Corpus</span><select id="in_scala">
+      <option value="piccolo">piccolo · 6 incidenti · ~23k token</option>
+      <option value="medio" selected>medio · 20 incidenti · ~112k token</option>
+      <option value="enorme">enorme · 50 incidenti · ~510k token</option>
+      <optgroup label="I tuoi dataset (datasets/)" id="in_ds"></optgroup></select></label>
+    <label class="field"><span>Prove</span><input type="number" id="in_n" value="1" min="1" max="10"></label>
+    <label class="field"><span>Estrazione dal pool di 100</span><input type="number" id="in_campione" placeholder="vuoto = casuale" min="0"
+      title="Ogni run pesca gli incidenti a caso da un pool di 100. Scrivi il numero di un'estrazione per ripeterla identica."></label>
+    <label class="field"><span>max_tokens</span><input type="number" id="in_maxtok" value="24000" min="1024" step="1024"></label>
+    <label class="field"><span>timeout per chiamata (s)</span><input type="number" id="in_timeout" value="1800" min="60" step="60"
+      title="Un prompt di ~112k token su un PC remoto può superare i 15 minuti"></label>
+    <div class="field"><span>Metodi</span><div>
+      <label class="s"><input type="checkbox" id="in_S" checked> S</label> <label class="s"><input type="checkbox" id="in_A" checked> A</label>
+      <label class="s"><input type="checkbox" id="in_B" checked> B</label> <label class="s"><input type="checkbox" id="in_C" checked> C</label>
+      <label class="s"><input type="checkbox" id="in_judge" checked> giudice</label></div></div>
+    <div class="field grow"><span>Modelli (girano in parallelo)</span><div id="in_models" class="modelpick"></div></div>
+    <button id="run-incidenti">Esegui benchmark</button>
+  </div>
+  <div id="in_corpus"></div>
+  <div class="card" id="in_live" hidden><h4>In corso</h4><div id="in_lanes" class="lanes"></div></div>
+  <div class="card" id="in_bench" hidden>
+    <h4>Benchmark</h4>
+    <div class="tablewrap"><table id="in_table"><thead><tr>
+      <th>modello</th><th>metodo</th><th>esito</th><th>deterministici</th><th>categoria</th><th>derivati</th><th>incidenti ok</th>
+      <th>tempo task</th><th>chiamate</th><th>token</th><th>latenza media / p95</th><th>tok/s</th>
+      <th>validatori<br><small>trovati/falsi/mancati</small></th><th>giudice<br><small>trovati/falsi/mancati</small></th><th>C: arbitrati · correzioni</th>
+    </tr></thead><tbody id="in_rows"></tbody></table></div>
+    <p class="note">Clicca una riga per vedere gli errori reali e l'output prodotto.</p>
+  </div>
+  <div class="card" id="in_cmp" hidden><h4>Confronto per tipo di campo</h4><div id="in_cmp_body"></div></div>
+  <div class="card" id="in_calls_card" hidden>
+    <h4>Tutte le chiamate LLM <span class="tag" id="in_calls_n"></span></h4>
+    <div class="controls" style="margin:6px 0">
+      <label class="field"><span>Modello</span><select id="cl_model"><option value="">tutti</option></select></label>
+      <label class="field"><span>Metodo</span><select id="cl_method"><option value="">tutti</option><option>A</option><option>B</option><option>C</option></select></label>
+      <label class="field"><span>Ruolo</span><select id="cl_name"><option value="">tutti</option></select></label>
+      <label class="field grow"><span>Cerca nel testo</span><input id="cl_q" placeholder="INC-0123, ransomware…"></label>
+    </div>
+    <div class="tablewrap calls"><table><thead><tr><th>#</th><th>ora</th><th>modello</th><th>met.</th><th>ruolo</th><th>latenza</th>
+      <th>tok prompt</th><th>tok output</th><th>di cui reasoning</th><th>tok/s</th><th>fine</th><th>risposta</th></tr></thead>
+      <tbody id="cl_rows"></tbody></table></div>
+    <div id="cl_detail"></div>
+  </div>
+</section>
+
+<!-- ============================== CODICE & PROMPT -->
+<section class="tab" id="tab-codice">
+  <p class="intro">Com'è fatto il progetto: i file, cosa contengono, e i <b>prompt esatti</b> che ricevono gli agenti e i sub-agenti.
+    I prompt sono catturati da un'esecuzione reale col modello finto, quindi sono il testo vero, con dati di esempio.</p>
+  <div class="codegrid">
+    <div class="card filelist"><h4>File</h4><div id="src_files"></div></div>
+    <div class="card"><h4 id="src_title">Seleziona un file</h4><div id="src_outline" class="outline"></div><div id="src_view"></div></div>
+  </div>
+  <h3 style="margin:18px 0 6px">Prompt degli agenti</h3>
+  <div id="prompts"></div>
+</section>
+
+<!-- ============================== STORICO -->
+<section class="tab" id="tab-storico">
+  <p class="intro">Ogni esecuzione (web UI e riga di comando) viene salvata in <code>data/runs/</code> con <b>modello</b>,
+    parametri, riepilogo e tutti gli eventi. <b>Apri</b> la riporta nella sua scheda esattamente com'era.</p>
+  <div class="controls">
+    <label class="field"><span>Demo</span><select id="h_demo"><option value="">tutte</option></select></label>
+    <label class="field"><span>Modello</span><select id="h_model"><option value="">tutti</option></select></label>
+    <label class="field grow"><span>Cerca</span><input id="h_q" placeholder="id, parametri, risposta…"></label>
+    <button class="ghost" id="h_refresh">↻ Aggiorna</button>
+  </div>
+  <div class="card"><div class="tablewrap"><table id="h_table"><thead><tr>
+    <th>data</th><th>demo</th><th>modello</th><th>origine</th><th>parametri</th><th>risultato</th><th>durata</th><th></th>
+  </tr></thead><tbody id="h_rows"></tbody></table></div>
+  <p class="note" id="h_count"></p></div>
+</section>
+
+<!-- ============================== PROVIDER E DATI -->
+<section class="tab" id="tab-config">
+  <p class="intro">I <b>provider</b> sono i server OpenAI-compatibili da cui vengono i modelli (LM Studio, Ollama, llama.cpp, vLLM, SGLang
+    o un servizio cloud). Vengono salvati in <code>providers.json</code>. La chiave API non si scrive qui: indica il <b>nome della variabile
+    d'ambiente</b> che la contiene (es. <code>OPENROUTER_API_KEY</code>) e avvia la web UI con quella variabile impostata.</p>
+  <div class="card"><h4>Provider</h4>
+    <div class="tablewrap"><table><thead><tr><th>attivo</th><th>nome</th><th>base_url</th><th>variabile della chiave</th>
+      <th>modelli fissi <small>(virgola; vuoto = chiedi al server)</small></th><th></th></tr></thead><tbody id="pv_rows"></tbody></table></div>
+    <div class="controls" style="margin-top:8px"><button class="ghost" id="pv_add">+ Aggiungi provider</button>
+      <button id="pv_save">Salva</button><span class="note" id="pv_msg"></span></div>
+  </div>
+  <div class="card"><h4>Dataset per il benchmark Incidenti</h4>
+    <p class="note">Un dataset è una cartella <code>datasets/&lt;nome&gt;/</code> con gli stessi file del corpus sintetico.
+      Obbligatorio solo <code>siem_export.log</code>, con <code>corr=&lt;ID&gt;</code> sugli eventi che appartengono a un incidente.
+      Facoltativi: <code>analyst_notes.md</code>, <code>email_thread.txt</code>, <code>edr_alerts.jsonl</code>, <code>threat_intel.txt</code>,
+      <code>asset_inventory.csv</code>, <code>policy.md</code>. Con <code>truth.json</code> (anche solo <code>id</code> e <code>category</code>)
+      i risultati vengono valutati; senza, vedi output e segnalazioni dei validatori. Formato completo in <code>datasets/README.md</code>;
+      esempio pronto in <code>datasets/esempio/</code>.</p>
+    <div class="tablewrap"><table><thead><tr><th>nome</th><th>incidenti</th><th>etichettato</th><th>file</th></tr></thead>
+      <tbody id="ds_rows"></tbody></table></div>
+    <div class="controls" style="margin-top:8px">
+      <label class="field"><span>Nome</span><input id="ds_nome" placeholder="es. soc-ottobre"></label>
+      <label class="field grow"><span>File (con i nomi previsti)</span><input type="file" id="ds_files" multiple></label>
+      <label class="s"><input type="checkbox" id="ds_over"> sovrascrivi</label>
+      <button id="ds_up">Carica dataset</button><span class="note" id="ds_msg"></span></div>
+  </div>
+</section>
+
+<!-- ============================== CONCETTI -->
+<section class="tab" id="tab-concetti">
+  <div class="card concept"><h3>Il loop</h3>
+    <div class="loop"><span class="box">messages = [system, user]</span><span class="arrow">→</span>
+      <span class="box">LLM(messages, tools)</span><span class="arrow">→</span>
+      <span class="box">tool_calls?</span><span class="arrow">sì →</span>
+      <span class="box">esegui in Python</span><span class="arrow">→</span>
+      <span class="box">aggiungi role="tool"</span><span class="arrow">↺</span>
+      <span class="arrow">no →</span><span class="box">risposta finale</span></div>
+    <p style="margin-top:8px">Tutto il resto (permessi, contesto, retry, log) è contorno. Codice: <code>harness/agent.py</code>.</p></div>
+  <div class="grid2">
+    <div class="card concept"><h3>Tool</h3><p>Funzione Python + descrizione + JSON Schema. Il modello vede solo lo schema;
+      <code>arguments</code> è una stringa che l'harness deve parsare e validare.</p></div>
+    <div class="card concept"><h3>Skill</h3><p>Cartella con <code>SKILL.md</code> e <code>scripts/</code>. Nel prompt va solo
+      l'indice: il modello carica le istruzioni quando servono (<i>progressive disclosure</i>).</p></div>
+    <div class="card concept"><h3>Sub-agente</h3><p>Lo stesso loop, con il contesto vuoto e meno tool. Al padre torna solo
+      il risultato finale: il contesto principale resta pulito.</p></div>
+    <div class="card concept"><h3>Schema forzato</h3><p>Il constrained decoding (XGrammar, GBNF) rende il JSON valido
+      per costruzione. Non rende veri i valori: per i calcoli serve codice deterministico.</p></div>
+  </div>
+</section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s ?? "").replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+
+function hl(obj) {  // JSON colorato
+  const s = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+  return esc(s).replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(\.\d+)?([eE][+-]?\d+)?)/g, m => {
+    let c = "num";
+    if (m.startsWith('"')) c = m.trimEnd().endsWith(":") ? "k" : "str";
+    else if (/true|false|null/.test(m)) c = "bool";
+    return `<span class="${c}">${m}</span>`;
+  });
+}
+const pre = (obj, cls = "") => `<pre class="${cls}">${hl(obj)}</pre>`;
+const tryParse = s => { try { return JSON.parse(s); } catch { return null; } };
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+
+// ---------------------------------------------------------------- impostazioni
+function settings() {
+  return { backend: $("#backend").value, base_url: $("#base_url").value, model: $("#model").value };
+}
+let MODELS = [];
+const port = u => { try { const x = new URL(u); return x.hostname.replace("localhost", "") + ":" + x.port; } catch { return u || ""; } };
+async function loadModels() {
+  const st = $("#status");
+  if ($("#backend").value === "mock") { st.textContent = "mock"; st.className = "pill"; renderModelPick(); return; }
+  st.innerHTML = '<span class="spinner"></span>'; st.className = "pill";
+  const r = await (await fetch("/api/models?base_url=" + encodeURIComponent($("#base_url").value))).json();
+  const sel = $("#model"), prev = sel.value || localStorage.oh_model || defaults.model;
+  sel.innerHTML = "";
+  if (!r.ok) { st.textContent = "non raggiungibile"; st.className = "pill ko"; st.title = r.error; return; }
+  for (const m of r.models) {
+    const o = el("option"); o.value = m.id; o.textContent = (m.loaded ? "● " : "") + m.id + " · " + port(m.server); sel.append(o);
+  }
+  if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+  const nl = r.models.filter(m => m.loaded).length;
+  st.textContent = `connesso ${r.servers_ok}/${r.servers} server · ${nl} caricati`;
+  st.className = r.servers_ok === r.servers ? "pill ok" : "pill"; st.title = r.error || "";
+  MODELS = r.models; renderModelPick();
+}
+function syncBackendUI() {
+  const local = $("#backend").value === "local";
+  $("#base_url").hidden = $("#model").hidden = $("#refresh").hidden = !local;
+  localStorage.oh_backend = $("#backend").value;
+  $("#cf_n").value = local ? 3 : 10;
+  $("#cf_hint").textContent = local ? "Con un modello vero il metodo A può richiedere ~1 minuto per prova." : "Mock: gli errori di A sono SIMULATI.";
+  loadModels();
+}
+
+// ---------------------------------------------------------------- run + SSE
+async function run(demo, params, onEvent, btn) {
+  btn.disabled = true; const label = btn.textContent; btn.innerHTML = '<span class="spinner"></span> in corso';
+  const inner = onEvent;
+  onEvent = ev => {  // run_info = id nello storico + modello usato: lo mostriamo nel banner
+    if (ev.type === "run_info") return showBanner(demo, { id: ev.history_id, model: ev.model, started_at: ev.started_at }, false);
+    inner(ev);
+  };
+  if (FOLLOW?.demo === demo) stopFollow();
+  removeBanner(demo);
+  const { run_id } = await (await fetch("/api/run", { method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ demo, ...settings(), ...params }) })).json();
+  return new Promise(resolve => {
+    const es = new EventSource("/api/stream/" + run_id);
+    es.onmessage = m => {
+      const ev = JSON.parse(m.data);
+      if (ev.type === "end") { es.close(); btn.disabled = false; btn.textContent = label; resolve(); return; }
+      onEvent(ev);
+    };
+    es.onerror = () => { es.close(); btn.disabled = false; btn.textContent = label; resolve(); };
+  });
+}
+const errorCard = ev => el("div", "card ev-error", `<h4 style="color:var(--red)">Errore</h4><pre>${esc(ev.message)}</pre>`);
+
+// ---------------------------------------------------------------- AGENTE
+let stack, stats;
+function agentEvent(ev) {
+  const tl = $("#timeline");
+  if (ev.type === "notice") return tl.append(el("div", "notice", esc(ev.text)));
+  if (ev.type === "error") return tl.append(errorCard(ev));
+  const d = ev.depth || 0;
+  if (ev.type === "task") {
+    if (d === 0) {
+      $("#sysbox").hidden = false;
+      $("#syspre").innerHTML = hl(ev.system) + "\n\n" + hl(ev.tools.map(t => t.function.name + ": " + t.function.description).join("\n"));
+      stack = [tl];
+      tl.append(el("div", "card ev-task", `<h4>Task <span class="tag">role: user</span></h4><div class="answer">${esc(ev.text)}</div>`));
+    } else {
+      const g = el("div", "sub", `<div class="sub-label">↳ sub-agente · contesto nuovo · tool: ${ev.tools.map(t => t.function.name).join(", ")}</div>`);
+      stack[d - 1].append(g); stack[d] = g;
+      g.append(el("div", "card ev-task", `<h4>Task del sub-agente</h4><div class="answer">${esc(ev.text)}</div>`));
+    }
+    return;
+  }
+  const box = stack[d] || tl;
+  if (ev.type === "llm") {
+    stats.steps++; stats.tok += ev.response?.usage?.completion_tokens || 0;
+    const c = ev.message.content, calls = ev.message.tool_calls || [];
+    const card = el("div", "card ev-model",
+      `<h4>${esc(ev.agent)} · passo ${ev.step} <span class="tag">role: assistant</span>
+        <span class="tag">${calls.length ? calls.length + " tool_call" : "nessuna tool_call → fine"}</span>
+        ${ev.finish_reason === "length" ? `<span class="tag" style="color:var(--red)">TRONCATA da max_tokens</span>` : ""}
+        <span class="tag">${ev.response?.usage?.completion_tokens ?? 0} token</span></h4>` +
+      (c ? `<div class="answer">${md(c)}</div>` : `<div class="note">(nessun testo, solo richieste di tool)</div>`) +
+      `<details class="raw"><summary>risposta grezza del server</summary>${pre(ev.response)}</details>`);
+    box.append(card);
+  } else if (ev.type === "tool_call") {
+    stats.calls++;
+    const args = tryParse(ev.arguments);
+    box.append(el("div", "card ev-call", `<h4>tool_call → <span style="color:var(--yel)">${esc(ev.name)}</span>
+      <span class="tag">id ${esc(ev.id).slice(0, 14)}</span></h4>` +
+      (args ? pre(args) : `<pre style="color:var(--red)">${esc(ev.arguments)}</pre>`) +
+      `<div class="note">arguments arriva come <b>stringa</b>: ${esc(JSON.stringify(ev.arguments)).slice(0, 160)}</div>`));
+  } else if (ev.type === "tool_result") {
+    const long = ev.result.length > 600;
+    const body = tryParse(ev.result) ? pre(tryParse(ev.result)) : `<pre>${esc(ev.result)}</pre>`;
+    box.append(el("div", "card ev-result" + (ev.is_error ? " err" : ""),
+      `<h4>${ev.is_error ? "⚠ errore" : "risultato"} di ${esc(ev.name)} <span class="tag">role: tool</span>
+      <span class="tag">eseguito dall'harness in Python</span></h4>` +
+      (long ? `<details><summary>${ev.result.length} caratteri, clicca per espandere</summary>${body}</details>` : body)));
+  } else if (ev.type === "final") {
+    box.append(el("div", "card ev-final", `<h4 style="color:var(--grn)">${esc(ev.agent)}: fine dopo ${ev.steps} passi</h4>` +
+      (d === 0 ? `<div class="answer">${md(ev.text)}</div>` : "")));
+  } else if (ev.type === "stop") {
+    box.append(el("div", "card ev-error", `<h4 style="color:var(--red)">STOP: raggiunto max_steps=${ev.max_steps}</h4>`));
+  }
+  $("#ag-stats").innerHTML = `passi LLM <b>${stats.steps}</b> · tool call <b>${stats.calls}</b> · token generati <b>${stats.tok}</b>`;
+}
+$("#run-agente").onclick = () => {
+  $("#timeline").innerHTML = ""; stack = [$("#timeline")]; stats = { steps: 0, calls: 0, tok: 0 };
+  run("agente", { task: $("#task").value, max_steps: +$("#max_steps").value, max_tokens: +$("#ag_maxtok").value, righe: +$("#ag_righe").value }, agentEvent, $("#run-agente"));
+};
+
+// ---------------------------------------------------------------- ANATOMIA
+const ANAT = {
+  a: ["Cosa vede il modello del tool", "Solo nome, descrizione e JSON Schema. La funzione Python resta nell'harness.", "tools"],
+  u: ["Il messaggio dell'utente", "", "role: user"],
+  b: ["Il modello risponde con una RICHIESTA", "Non esegue niente: scrive un JSON con nome del tool e argomenti.", "role: assistant"],
+  c: ["L'harness esegue Python e risponde", "json.loads(arguments) → validazione schema → funzione vera → messaggio role=tool con lo stesso id.", "role: tool"],
+  d: ["Il modello legge il risultato e risponde", "Seconda chiamata al modello, con tutta la conversazione.", "role: assistant"],
+  e: ["Bonus: argomenti sbagliati o allucinati", "Gli errori non fanno crashare niente: tornano al modello come testo, così può correggersi.", "validazione"],
+  x: ["Nessuna tool call", "", "tool_choice=auto"],
+};
+let anatN;
+function anatEvent(ev) {
+  const box = $("#anat");
+  if (ev.type === "error") return box.append(errorCard(ev));
+  const [t, note, tag] = ANAT[ev.step];
+  const n = ev.step === "u" ? "" : `<span class="step-n">${++anatN}</span>`;
+  let body = "";
+  if (ev.json) body += pre(ev.json);
+  if (ev.step === "c") body = `<div class="note">arguments (stringa): <code>${esc(ev.arguments)}</code></div>` + body;
+  if (ev.text) body += `<div class="answer" style="margin-top:6px">${md(ev.text)}</div>`;
+  if (ev.rows) body += `<table><tr><th>arguments scritti dal modello</th><th>cosa risponde l'harness</th></tr>` +
+    ev.rows.map(r => `<tr><td>${esc(r.arguments)}</td><td class="bad">${esc(r.result)}</td></tr>`).join("") + `</table>`;
+  if (ev.raw) body += `<details class="raw"><summary>risposta grezza del server</summary>${pre(ev.raw)}</details>`;
+  box.append(el("div", "card", `<h4>${n} ${t} <span class="tag">${tag}</span></h4>${note ? `<p class="note">${note}</p>` : ""}${body}`));
+}
+$("#run-anatomia").onclick = () => { $("#anat").innerHTML = ""; anatN = 0; run("anatomia", { prompt: $("#an_prompt").value }, anatEvent, $("#run-anatomia")); };
+
+// ---------------------------------------------------------------- JSON
+function jsonEvent(ev) {
+  if (ev.type === "error") return $("#jsres").append(errorCard(ev));
+  if (ev.type === "json_start") {
+    const c = el("div", "card", `<h4>modo: ${ev.mode} <span class="spinner"></span></h4>`);
+    c.id = "js-" + ev.mode; $("#jsres").append(c); return;
+  }
+  const c = $("#js-" + ev.mode), ok = !!ev.data;
+  c.innerHTML = `<h4>modo: ${ev.mode} <span class="${ok ? "ok-t" : "ko-t"}">${ok ? "VALIDO" : "FALLITO"}</span>
+    <span class="tag">tentativi ${ev.attempts}</span><span class="tag">${ev.sec.toFixed(1)} s</span></h4>
+    <p class="note">${ev.mode === "prompt" ? "Schema solo nel testo del prompt → parse + validazione + retry nell'harness."
+      : "response_format json_schema → il server maschera i token non validi (constrained decoding)."}</p>` +
+    (ev.errors.length ? `<div style="margin-top:6px">${ev.errors.map(e => `<div class="ko-t" style="font-weight:400;font-size:12.5px">✗ ${esc(e)}</div>`).join("")}</div>` : "") +
+    (ok ? pre(ev.data) : `<pre>${esc(ev.raw)}</pre>`) +
+    `<details class="raw"><summary>output grezzo del modello</summary><pre>${esc(ev.raw)}</pre></details>`;
+}
+$("#run-json").onclick = () => {
+  $("#jsres").innerHTML = "";
+  const modes = [["prompt", "#m_prompt"], ["constrained", "#m_constrained"]].filter(([, s]) => $(s).checked).map(([m]) => m);
+  run("json", { text: $("#js_text").value, schema: $("#js_schema").value, modes }, jsonEvent, $("#run-json"));
+};
+
+// ---------------------------------------------------------------- CONFRONTO
+let truth, agg;
+const fmt = v => typeof v === "number" ? v.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—";
+const cell = (d, k) => !d ? `<td class="bad">—</td>` :
+  `<td class="${Math.abs(d[k] - truth[k]) < 0.005 ? "good" : "bad"}">${k === "numero_righe" ? d[k] : fmt(d[k])}</td>`;
+function confrontoEvent(ev) {
+  if (ev.type === "error") return $("#cf_truth").append(errorCard(ev));
+  if (ev.type === "truth") {
+    truth = ev.values;
+    $("#cf_truth").innerHTML = `<div class="card ev-final"><h4>Valori corretti (fattura da ${ev.righe} righe)</h4>
+      imponibile <b>${fmt(truth.imponibile)} €</b> · IVA <b>${fmt(truth.iva)} €</b> · totale <b>${fmt(truth.totale)} €</b></div>` +
+      (ev.simulated ? `<div class="notice">Backend mock: gli errori del metodo A sono <b>simulati</b>. Passa a "local" per misurarli su un modello vero.</div>` : "");
+    return;
+  }
+  const a = agg[ev.method]; a.n++; a.ok += ev.ok; a.sec += ev.sec; a.tok += ev.tok;
+  const esito = `<td class="${ev.ok ? "ok-t" : "ko-t"}">${ev.ok ? "GIUSTO" : "SBAGLIATO"}</td>`;
+  const tail = `${cell(ev.data, "imponibile")}${cell(ev.data, "totale")}<td>${ev.sec.toFixed(0)}</td><td>${ev.tok}</td>`;
+  if (ev.method === "A") $("#tA").insertAdjacentHTML("beforeend", `<tr><td>${ev.i}</td>${esito}${cell(ev.data, "numero_righe")}${tail}</tr>`);
+  else {
+    $("#tB").insertAdjacentHTML("beforeend", `<tr title="${esc(ev.error || ev.call || "")}"><td>${ev.i}</td>${esito}
+      <td class="${ev.reprompt ? "bad" : ""}">${ev.tool ? ev.turni : "nessun tool"}${ev.reprompt ? ` (${ev.reprompt} re-prompt)` : ""}</td>${tail}</tr>`);
+    a.retry += ev.reprompt;
+  }
+  renderBars();
+}
+function renderBars() {
+  $("#cf_summary").hidden = false;
+  const rows = [];
+  const maxSec = Math.max(1, ...["A", "B"].map(m => agg[m].n ? agg[m].sec / agg[m].n : 0));
+  const maxTok = Math.max(1, ...["A", "B"].map(m => agg[m].n ? agg[m].tok / agg[m].n : 0));
+  for (const m of ["A", "B"]) {
+    const a = agg[m]; if (!a.n) continue;
+    const pct = 100 * a.ok / a.n, col = m === "A" ? "var(--yel)" : "var(--grn)";
+    rows.push(`<span>${m} · corretti</span><div class="bar"><div style="width:${pct}%;background:${col}"></div></div><span>${a.ok}/${a.n}</span>`);
+    rows.push(`<span>${m} · tempo medio</span><div class="bar"><div style="width:${100 * a.sec / a.n / maxSec}%;background:${col};opacity:.6"></div></div><span>${(a.sec / a.n).toFixed(1)} s</span>`);
+    rows.push(`<span>${m} · token medi</span><div class="bar"><div style="width:${100 * a.tok / a.n / maxTok}%;background:${col};opacity:.4"></div></div><span>${Math.round(a.tok / a.n)}</span>`);
+  }
+  if (agg.B.retry) rows.push(`<span class="note" style="grid-column:1/-1">L'harness ha dovuto ri-chiedere il tool ${agg.B.retry} volte: la garanzia è nel codice, non nel prompt.</span>`);
+  $("#bars").innerHTML = rows.join("");
+}
+$("#run-confronto").onclick = () => {
+  $("#tA").innerHTML = $("#tB").innerHTML = $("#cf_truth").innerHTML = ""; $("#cf_summary").hidden = true;
+  agg = { A: { n: 0, ok: 0, sec: 0, tok: 0 }, B: { n: 0, ok: 0, sec: 0, tok: 0, retry: 0 } };
+  run("confronto", { max_tokens: +$("#cf_maxtok").value, righe: +$("#cf_righe").value, n: +$("#cf_n").value, solo_b: $("#cf_solo_b").checked }, confrontoEvent, $("#run-confronto"));
+};
+
+// ---------------------------------------------------------------- JSON LUNGHI
+let lj;  // stato del benchmark in corso
+const det = d => d ? `${d.veri_pos} / <span class="${d.falsi_pos ? "bad" : ""}">${d.falsi_pos}</span> / <span class="${d.mancati ? "bad" : ""}">${d.mancati}</span>` : "—";
+function ljLog(ev) {
+  const log = $("#lj_log"), b = ev.blocco != null ? `blocco ${ev.blocco + 1}` : "";
+  let txt = ev.msg || "";
+  if (ev.role === "estrattore") txt = ev.stato === "start" ? "estrazione avviata" : `fatto${ev.non_verificate?.length ? " · NON verificate: " + ev.non_verificate.join(", ") : ""}`;
+  if (ev.role === "validatore") txt = ev.bocciate.length ? `bocciate ${ev.bocciate.length}: ` + ev.bocciate.map(x => `${x.codice} (${x.problemi.join("; ")})`).join(" · ") : "tutte le righe passano";
+  if (ev.role === "correttore") txt = `${ev.da_giudice ? "su richiesta del giudice · " : `tentativo ${ev.tentativo} · `}${ev.codice} → ${ev.ok ? "OK" : ev.problemi.join("; ")}`;
+  if (ev.role === "giudice") txt = ev.flag.length ? `segnala ${ev.flag.length}: ` + ev.flag.map(f => `${f.codice} (${f.problema})`).join(" · ") : "nessun dubbio";
+  log.insertAdjacentHTML("beforeend", `<div class="r-${ev.role}">[${ev.role}] ${b} ${esc(txt)}</div>`);
+  log.scrollTop = log.scrollHeight;
+}
+function ljBlock(ev) {
+  if (ev.blocco == null) return;
+  let el_ = $(`#ljb-${ev.blocco}`);
+  if (!el_) return;
+  const s = lj.blocks[ev.blocco];
+  if (ev.role === "estrattore" && ev.stato === "start") { s.stato = "estrazione…"; el_.className = "block run"; }
+  if (ev.role === "validatore") { s.bocciate = ev.bocciate.length; s.stato = ev.bocciate.length ? "correzione…" : "validato"; }
+  if (ev.role === "correttore") { s.corr++; if (ev.ok) s.fix++; }
+  if (ev.role === "giudice") { s.giudice = ev.flag.length; s.stato = "giudice…"; }
+  if (ev.role === "estrattore" && ev.stato === "fatto") { s.stato = ev.non_verificate.length ? `${ev.non_verificate.length} non verificate` : "✓ verificato"; el_.className = "block " + (ev.non_verificate.length ? "ko" : "ok"); }
+  el_.innerHTML = `<b>Blocco ${ev.blocco + 1}</b> · ${s.stato}
+    <div class="ln">validatori: ${s.bocciate == null ? "…" : s.bocciate ? `<span class="ko-t" style="font-weight:400">${s.bocciate} bocciate</span>` : "tutte ok"}</div>
+    <div class="ln">correttore: ${s.corr} chiamate, ${s.fix} ok</div>
+    <div class="ln">giudice: ${s.giudice == null ? "…" : s.giudice + " dubbi"}</div>`;
+}
+function ljEvent(ev) {
+  if (ev.type === "error") return $("#lj_truth").append(errorCard(ev));
+  if (ev.type === "notice") return $("#lj_truth").append(el("div", "notice", esc(ev.text)));
+  if (ev.type === "truth") {
+    lj.truth = ev;
+    $("#lj_truth").innerHTML = `<div class="card ev-final"><h4>Compito: ${ev.righe} righe d'ordine → JSON con ${ev.campi} campi
+      <span class="tag">imponibile ${fmt(ev.imponibile)} €</span><span class="tag">totale ${fmt(ev.totale)} €</span></h4>
+      <p class="note">Validatori: ${ev.validatori.join(" · ")}</p>
+      <details><summary>email d'ordine (input)</summary><pre>${esc(ev.testo)}</pre></details></div>` +
+      (ev.simulated ? `<div class="notice">Backend mock: gli errori dei modelli e del giudice sono <b>simulati</b>. Passa a "local" per misurarli davvero.</div>` : "");
+    $("#lj_bench").hidden = false;
+    return;
+  }
+  if (ev.type === "start") {
+    $("#lj_rows").insertAdjacentHTML("beforeend", `<tr id="ljr-${ev.method}${ev.i}"><td><span class="mtag ${ev.method}">${ev.method}</span> #${ev.i}</td>
+      <td colspan="12"><span class="spinner"></span> in corso…</td></tr>`);
+    if (ev.method === "C") {
+      $("#lj_pipe").hidden = false; $("#lj_pipe_run").textContent = "prova #" + ev.i;
+      $("#lj_blocks").innerHTML = ""; $("#lj_log").innerHTML = ""; lj.blocks = {};
+    }
+    return;
+  }
+  if (ev.type === "agent") {
+    if (ev.role === "splitter") {
+      for (let k = 0; k < ev.blocchi; k++) {
+        lj.blocks[k] = { stato: "in coda", corr: 0, fix: 0 };
+        $("#lj_blocks").insertAdjacentHTML("beforeend", `<div class="block" id="ljb-${k}"><b>Blocco ${k + 1}</b> · in coda</div>`);
+      }
+    }
+    ljLog(ev); ljBlock(ev); return;
+  }
+  if (ev.type === "result") {
+    lj.results.push(ev);
+    const cls = ev.esatto ? "ok-t" : "ko-t";
+    const corr = ev.method === "C" ? `${ev.correzioni}${ev.non_verificate.length ? ` · <span class="bad">${ev.non_verificate.length} non verif.</span>` : ""}` : "—";
+    let row = $(`#ljr-${ev.method}${ev.i}`);
+    if (!row) {  // run importati: nessun evento "start" che abbia creato la riga
+      row = el("tr"); row.id = `ljr-${ev.method}${ev.i}`; $("#lj_rows").append(row); $("#lj_bench").hidden = false;
+    }
+    row.className = "res";
+    row.innerHTML = `<td><span class="mtag ${ev.method}">${ev.method}</span> #${ev.i}</td>
+      <td class="${cls}">${ev.esatto ? "ESATTO" : "ERRATO"}</td>
+      <td class="${ev.pct === 100 ? "good" : "bad"}">${ev.pct.toFixed(2)}%</td><td>${ev.righe_ok}/${ev.righe_tot}</td>
+      <td class="${ev.mancanti ? "bad" : ""}">${ev.mancanti}</td><td class="${ev.inventate ? "bad" : ""}">${ev.inventate}</td>
+      <td class="${ev.totali_ok ? "good" : "bad"}">${ev.totali_ok ? "✓" : "✗"}</td>
+      <td>${ev.sec.toFixed(1)} s</td><td>${ev.tok}</td><td>${ev.calls}</td>
+      <td>${det(ev.validatori)}</td><td>${det(ev.giudice)}</td><td>${corr}</td>`;
+    const detail = el("tr", "detail"); detail.hidden = true;
+    detail.innerHTML = `<td colspan="13">${ev.error ? `<div class="ko-t">${esc(ev.error)}</div>` : ""}
+      ${ev.note ? `<b>Nota:</b> ${esc(ev.note)}<br>` : ""}
+      <b>Errori reali${ev.n_errori != null ? ` (${ev.n_errori})` : ""}:</b> ${ev.errori.length ? esc(ev.errori.join(" · ")) : ev.n_errori == null ? "dettaglio non disponibile" : "nessuno"}<br>
+      <b>Segnalato dai validatori:</b> ${ev.validatori_problemi.length ? esc(ev.validatori_problemi.join(" · ")) : ev.validatori ? "niente" : "non disponibile"}</td>`;
+    row.after(detail);
+    row.onclick = () => detail.hidden = !detail.hidden;
+    ljSummary();
+  }
+}
+function ljSummary() {
+  $("#lj_summary").hidden = false;
+  const by = m => lj.results.filter(r => r.method === m);
+  const ms = ["A", "B", "C"].filter(m => by(m).length);
+  const avg = (rs, f) => rs.reduce((s, r) => s + f(r), 0) / rs.length;
+  const maxSec = Math.max(...ms.map(m => avg(by(m), r => r.sec)), 0.001);
+  const maxTok = Math.max(...ms.map(m => avg(by(m), r => r.tok)), 1);
+  const col = { A: "var(--yel)", B: "var(--cyan)", C: "var(--grn)" };
+  const rows = [];
+  for (const m of ms) {
+    const rs = by(m), ex = rs.filter(r => r.esatto).length, p = avg(rs, r => r.pct), s = avg(rs, r => r.sec), t = avg(rs, r => r.tok);
+    rows.push(`<span>${m} · JSON esatti</span><div class="bar"><div style="width:${100 * ex / rs.length}%;background:${col[m]}"></div></div><span>${ex}/${rs.length}</span>`);
+    rows.push(`<span>${m} · campi corretti</span><div class="bar"><div style="width:${p}%;background:${col[m]};opacity:.8"></div></div><span>${p.toFixed(1)}%</span>`);
+    rows.push(`<span>${m} · tempo medio</span><div class="bar"><div style="width:${100 * s / maxSec}%;background:${col[m]};opacity:.55"></div></div><span>${s.toFixed(1)} s</span>`);
+    rows.push(`<span>${m} · token medi</span><div class="bar"><div style="width:${100 * t / maxTok}%;background:${col[m]};opacity:.35"></div></div><span>${Math.round(t)}</span>`);
+  }
+  $("#lj_bars").innerHTML = rows.join("");
+  const sum = key => { const a = { veri_pos: 0, falsi_pos: 0, mancati: 0, n: 0 };
+    for (const r of lj.results) if (r[key]) { a.n++; for (const k of ["veri_pos", "falsi_pos", "mancati"]) a[k] += r[key][k]; } return a; };
+  const v = sum("validatori"), g = sum("giudice");
+  const line = (name, a) => {
+    if (!a.n) return `<tr><td>${name}</td><td colspan="3" class="note">non eseguito</td></tr>`;
+    const prec = a.veri_pos + a.falsi_pos ? 100 * a.veri_pos / (a.veri_pos + a.falsi_pos) : 100;
+    const rec = a.veri_pos + a.mancati ? 100 * a.veri_pos / (a.veri_pos + a.mancati) : 100;
+    return `<tr><td>${name}</td><td>${a.veri_pos} trovati</td><td class="${a.falsi_pos ? "bad" : "good"}">${a.falsi_pos} falsi allarmi</td>
+      <td class="${a.mancati ? "bad" : "good"}">${a.mancati} mancati</td><td>precisione ${prec.toFixed(0)}% · richiamo ${rec.toFixed(0)}%</td></tr>`;
+  };
+  $("#lj_detect").innerHTML = `<table>${line("Validatori (Python)", v)}${line("Giudice (LLM)", g)}</table>
+    <p class="note">I validatori sono deterministici: se una riga passa, ogni suo valore compare davvero nel testo.
+    Il giudice è un altro LLM: utile come secondo parere, ma può dare falsi allarmi o lasciar passare errori.
+    Per questo in C le sue correzioni vengono accettate solo se passano i validatori.</p>`;
+}
+$("#run-lunghi").onclick = () => {
+  lj = { results: [], blocks: {} };
+  $("#lj_rows").innerHTML = $("#lj_truth").innerHTML = ""; $("#lj_pipe").hidden = $("#lj_summary").hidden = true;
+  const metodi = ["A", "B", "C"].filter(m => $("#lj_" + m).checked).join("");
+  run("lunghi", { righe: +$("#lj_righe").value, n: +$("#lj_n").value, chunk: +$("#lj_chunk").value,
+    max_tokens: +$("#lj_maxtok").value, metodi, judge: $("#lj_judge").checked, judge_ab: $("#lj_judge_ab").checked },
+    ljEvent, $("#run-lunghi"));
+};
+
+// ---------------------------------------------------------------- INCIDENTI SOC
+let inc;
+const key = (...a) => a.join("_").replace(/[^\w]/g, "_");
+const pctCell = v => v == null ? `<td>—</td>` : `<td class="${v === 100 ? "good" : "bad"}">${v.toFixed(1)}%</td>`;
+function renderModelPick() {
+  const box = $("#in_models"); if (!box) return;
+  const local = $("#backend").value === "local";
+  const prev = new Set([...box.querySelectorAll("input:checked")].map(i => i.value));
+  const list = local ? MODELS : [{ id: "mock-1", loaded: true }, { id: "mock-2", loaded: true }];
+  box.innerHTML = list.map(m => `<label><input type="checkbox" value="${esc(m.id)}" ${(prev.size ? prev.has(m.id) : m.loaded) ? "checked" : ""}>
+    ${m.loaded ? "● " : ""}${esc(m.id)} <span class="small">${[m.server && port(m.server), m.ctx && `ctx ${Math.round(m.ctx / 1024)}k`, m.quant].filter(Boolean).map(esc).join(" · ")}</span></label>`).join("")
+    || `<span class="note">nessun modello: controlla il server in alto</span>`;
+}
+function inLane(model) {
+  if (!inc.lanes[model]) {
+    inc.lanes[model] = { calls: 0, tok: 0, lat: 0, stato: "in attesa", ultimo: "" };
+    $("#in_lanes").insertAdjacentHTML("beforeend", `<div class="lane" id="lane-${key(model)}"></div>`);
+  }
+  return inc.lanes[model];
+}
+function drawLane(model) {
+  const l = inc.lanes[model];
+  $(`#lane-${key(model)}`).innerHTML = `<b>${esc(model)}</b><div>${l.stato}</div>
+    <div class="small">chiamate ${l.calls} · token ${l.tok} · latenza media ${l.calls ? (l.lat / l.calls).toFixed(1) : "–"} s</div>
+    <div class="small">${esc(l.ultimo)}</div>`;
+}
+function inEvent(ev) {
+  if (ev.type === "error") return $("#in_corpus").append(errorCard(ev));
+  if (ev.type === "notice") return $("#in_corpus").append(el("div", "notice", esc(ev.text)));
+  if (ev.type === "truth") {
+    inc.truth = ev;
+    const tot = ev.stats._totale;
+    const docs = Object.entries(ev.stats).filter(([k]) => k !== "_totale");
+    const ctxWarn = ev.modelli.map(m => {
+      const info = MODELS.find(x => x.id === m);
+      if (!info?.ctx) return "";
+      return tot.token_stimati > info.ctx
+        ? `<div class="ko-t" style="font-weight:400">⚠ ${esc(m)}: il corpus (~${Math.round(tot.token_stimati / 1000)}k token) NON entra nel contesto (${Math.round(info.ctx / 1024)}k) → il metodo A fallirà</div>`
+        : `<div class="ok-t" style="font-weight:400">✓ ${esc(m)}: il corpus entra nel contesto (${Math.round(info.ctx / 1024)}k)</div>`;
+    }).join("");
+    const nolab = ev.etichettato === false ? `<div class="notice">Dataset <b>${esc(ev.dataset)}</b> senza <code>truth.json</code>:
+      nessun punteggio. Per ogni metodo vedi l'output prodotto e cosa hanno segnalato i validatori (clicca una riga).</div>` : "";
+    $("#in_corpus").innerHTML = nolab + `<div class="card ev-final"><h4>Corpus "${esc(ev.scala)}": ${docs.length} documenti · ${tot.righe} righe · ${tot.kb} KB ·
+      ~${tot.token_stimati.toLocaleString("it-IT")} token → ${ev.incidenti} incidenti, ${ev.campi} campi</h4>
+      ${ev.pool ? `<p class="note">🎲 ${ev.incidenti} incidenti pescati a caso da un pool di ${ev.pool} · estrazione <b>${ev.campione}</b>
+        (scrivila nel campo "Estrazione" per ripetere lo stesso corpus) · ${(ev.ids || []).map(esc).join(", ")}</p>` : ""}
+      ${ev.prove?.length > 1 ? `<p class="note">Ogni prova pesca una <b>nuova estrazione</b>; dentro una prova tutti i metodi e i modelli
+        vedono lo stesso corpus. Dimensioni e anteprima qui sotto si riferiscono alla prova 1.</p>
+        <table><tr><th>prova</th><th>estrazione</th><th>token stimati</th><th>riclassificati</th><th>falsi positivi</th><th>categorie</th></tr>${ev.prove.map(p =>
+          `<tr><td>#${p.prova}</td><td>${p.campione}</td><td>${p.token_stimati.toLocaleString("it-IT")}</td><td>${p.trappole.riclassificati}</td>
+          <td>${p.trappole.falsi_positivi}</td><td>${Object.entries(p.categorie).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(" · ")}</td></tr>`).join("")}</table>` : ""}
+      <table><tr><th>documento</th><th>righe</th><th>KB</th><th>token stimati</th></tr>${docs.map(([k, s]) =>
+        `<tr><td>${esc(k)}</td><td>${s.righe}</td><td>${s.kb}</td><td>${s.token_stimati.toLocaleString("it-IT")}</td></tr>`).join("")}</table>
+      <p class="note">Trappole: ${ev.trappole.riclassificati} riclassificazioni successive · ${ev.trappole.falsi_positivi} falsi positivi dichiarati via email ·
+        ${ev.trappole.righe_che_citano_ID_senza_corr} righe SIEM che citano un incidente senza appartenergli.
+        Categorie: ${Object.entries(ev.categorie).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(" · ")}</p>
+      ${ctxWarn}
+      <details><summary>anteprima dei documenti (prime 60 righe di ciascuno)</summary>${Object.entries(ev.preview).map(([k, v]) =>
+        `<h5 style="margin:8px 0 2px">${esc(k)}</h5><pre>${esc(v)}</pre>`).join("")}</details></div>` +
+      (ev.simulated ? `<div class="notice">Backend mock: errori dei modelli <b>simulati</b>. Lo script S e i validatori invece sono reali.</div>` : "");
+    $("#in_bench").hidden = $("#in_live").hidden = false;
+    return;
+  }
+  const model = ev.model || "script";
+  if (ev.type === "start") {
+    const l = inLane(model); l.stato = `<span class="spinner"></span> metodo ${ev.method} in corso`; drawLane(model);
+    const id = "inr-" + key(model, ev.method, ev.i);
+    if (!$("#" + id)) $("#in_rows").insertAdjacentHTML("beforeend", `<tr id="${id}"><td>${esc(model)}</td>
+      <td><span class="mtag ${ev.method}">${ev.method}</span>${ev.campione != null ? ` <span class="s" title="estrazione ${ev.campione}">#${ev.i}</span>` : ""}</td><td colspan="13"><span class="spinner"></span> in corso…</td></tr>`);
+    return;
+  }
+  if (ev.type === "agent") {
+    const l = inLane(model);
+    l.ultimo = `[${ev.role}] ${ev.id || ""} ${ev.msg || ev.category || (ev.accordo === false ? `disaccordo: ${ev.c1} vs ${ev.c2}` : "") || ""}`;
+    drawLane(model); return;
+  }
+  if (ev.type === "llm_call") {
+    inc.calls.push(ev);
+    const l = inLane(model); l.calls++; l.tok += ev.completion_tokens || 0; l.lat += ev.latency || 0;
+    l.ultimo = `${ev.method} · ${ev.name}: ${ev.latency}s${ev.error ? " · ERRORE" : ""}`; drawLane(model);
+    scheduleCalls(); return;
+  }
+  if (ev.type === "result") {
+    inc.results.push(ev);
+    const l = inLane(model); l.stato = `metodo ${ev.method} finito`; drawLane(model);
+    const id = "inr-" + key(model, ev.method, ev.i);
+    let row = $("#" + id);
+    if (!row) { row = el("tr"); row.id = id; $("#in_rows").append(row); }
+    const lat = ev.latenza || {};
+    row.className = "res";
+    row.innerHTML = `<td>${esc(model)}</td><td><span class="mtag ${ev.method}">${ev.method}</span>${ev.campione != null ? ` <span class="s" title="estrazione ${ev.campione}">#${ev.i}</span>` : ""}</td>
+      <td class="${ev.non_valutato ? "" : ev.esatto ? "ok-t" : "ko-t"}">${ev.error ? "ERRORE" : ev.non_valutato ? "non valutato" : ev.esatto ? "ESATTO" : "ERRATO"}</td>
+      ${pctCell(ev.pct_det)}${pctCell(ev.pct_sem)}${pctCell(ev.pct_der)}<td>${ev.non_valutato ? `${(ev.output || []).length} in output` : `${ev.incidenti_ok}/${ev.incidenti_tot}`}</td>
+      <td>${dur(ev.sec)}</td><td>${ev.calls}</td><td>${ev.tok}</td>
+      <td>${lat.n ? `${lat.media} / ${lat.p95} s` : "—"}</td><td>${lat.tok_s ?? "—"}</td>
+      <td>${ev.non_valutato ? `${ev.validatori.segnalate} segnalati` : det(ev.validatori)}</td><td>${det(ev.giudice)}</td>
+      <td>${ev.method === "C" ? `${ev.arbitrati ?? 0} · ${ev.correzioni}${ev.non_verificate?.length ? ` · <span class="bad">${ev.non_verificate.length} non verif.</span>` : ""}` : "—"}</td>`;
+    const d = el("tr", "detail"); d.hidden = true;
+    d.innerHTML = `<td colspan="15">${ev.error ? `<div class="ko-t">${esc(ev.error)}</div>` : ""}
+      ${ev.non_valutato ? "" : `<b>Errori reali (${ev.n_errori}):</b> ${ev.errori.length ? esc(ev.errori.join(" · ")) : "nessuno"}<br>`}
+      <b>Segnalato dai validatori:</b> ${ev.validatori_problemi.length ? esc(ev.validatori_problemi.join(" · ")) : "niente"}
+      ${ev.output ? `<details><summary>output JSON prodotto (${ev.output.length} incidenti)</summary>${pre(ev.output)}</details>` : ""}</td>`;
+    row.nextElementSibling?.classList.contains("detail") && row.nextElementSibling.remove();
+    row.after(d); row.onclick = () => d.hidden = !d.hidden;
+    inCompare();
+  }
+}
+function inCompare() {
+  $("#in_cmp").hidden = !inc.results.some(r => !r.non_valutato);
+  const bar = (v, c) => `<div class="bar"><div style="width:${v}%;background:${c}"></div></div>`;
+  const col = { S: "#9aa3b8", A: "var(--yel)", B: "var(--cyan)", C: "var(--grn)" };
+  const rows = [...inc.results].filter(r => !r.non_valutato).sort((a, b) => a.method.localeCompare(b.method) || (a.model || "").localeCompare(b.model || ""));
+  $("#in_cmp_body").innerHTML = `<div class="cmpgrid"><span class="h">modello · metodo</span><span class="h">deterministici</span>
+    <span class="h">categoria (semantico)</span><span class="h">severità + MITRE</span><span class="h">tempo</span>` +
+    rows.map(r => `<span><span class="mtag ${r.method}" style="width:18px;height:18px;font-size:11px">${r.method}</span> ${esc(r.model || "script")}</span>
+      <span style="display:flex;gap:6px;align-items:center">${bar(r.pct_det, col[r.method])}<span>${r.pct_det.toFixed(0)}%</span></span>
+      <span style="display:flex;gap:6px;align-items:center">${bar(r.pct_sem, col[r.method])}<span>${r.pct_sem.toFixed(0)}%</span></span>
+      <span style="display:flex;gap:6px;align-items:center">${bar(r.pct_der, col[r.method])}<span>${r.pct_der.toFixed(0)}%</span></span>
+      <span>${dur(r.sec)}</span>`).join("") + `</div>
+    <p class="note">Lo script è sempre al 100% sui campi deterministici; la categoria richiede di capire il testo.
+      In C il modello fa solo quella, con due opinioni, arbitro e validatori; tutto il resto è calcolato dallo script.</p>`;
+}
+// ---- registro delle chiamate LLM
+let callsPending = false;
+function scheduleCalls() { if (!callsPending) { callsPending = true; requestAnimationFrame(() => { callsPending = false; renderCalls(); }); } }
+function renderCalls() {
+  $("#in_calls_card").hidden = !inc.calls.length;
+  const fill = (sel, vals) => { const cur = $(sel).value; const first = $(sel).options[0].outerHTML;
+    $(sel).innerHTML = first + vals.map(v => `<option>${esc(v)}</option>`).join(""); $(sel).value = vals.includes(cur) ? cur : ""; };
+  fill("#cl_model", [...new Set(inc.calls.map(c => c.model))]);
+  fill("#cl_name", [...new Set(inc.calls.map(c => c.name))]);
+  const m = $("#cl_model").value, me = $("#cl_method").value, n = $("#cl_name").value, q = $("#cl_q").value.toLowerCase();
+  const list = inc.calls.map((c, i) => [c, i]).filter(([c]) => (!m || c.model === m) && (!me || c.method === me) && (!n || c.name === n) &&
+    (!q || ((c.prompt || "") + (c.response || "") + (c.reasoning || "")).toLowerCase().includes(q)));
+  $("#in_calls_n").textContent = `${list.length} di ${inc.calls.length}`;
+  $("#cl_rows").innerHTML = list.slice(-600).map(([c, i]) => `<tr data-call="${i}" class="${inc.sel === i ? "sel" : ""}">
+    <td>${c.n}</td><td>${c.ts}</td><td>${esc(c.model)}</td><td>${c.method}</td><td>${esc(c.name)}</td>
+    <td>${c.latency}s</td><td>${c.prompt_tokens ?? "—"}</td><td>${c.completion_tokens ?? "—"}</td><td>${c.reasoning_tokens ?? "—"}</td>
+    <td>${c.tok_s ?? "—"}</td><td class="${c.error || c.finish_reason === "length" ? "bad" : ""}">${c.error ? "errore" : c.finish_reason ?? ""}</td>
+    <td class="resp">${esc((c.error || c.response || "").slice(0, 140))}</td></tr>`).join("");
+  document.querySelectorAll("[data-call]").forEach(r => r.onclick = () => showCall(+r.dataset.call));
+}
+function showCall(i) {
+  inc.sel = i; renderCalls();
+  const c = inc.calls[i], resp = tryParse(c.response);
+  $("#cl_detail").innerHTML = `<div class="card" style="margin-top:10px"><h4>Chiamata #${c.n} · ${esc(c.model)} · metodo ${c.method} · ${esc(c.name)}
+    <span class="tag">${c.latency}s</span><span class="tag">${c.prompt_tokens ?? "?"} → ${c.completion_tokens ?? "?"} token</span>
+    ${c.reasoning_tokens ? `<span class="tag">${c.reasoning_tokens} di reasoning</span>` : ""}<span class="tag">${c.tok_s ?? "?"} tok/s</span></h4>
+    <div class="calldetail"><div>
+      ${c.system ? `<h5>system</h5><pre>${esc(c.system)}</pre>` : ""}
+      ${c.messages?.length ? `<h5>messaggi precedenti</h5><pre>${esc(c.messages.map(m => `[${m.role}] ${m.content}`).join("\n\n"))}</pre>` : ""}
+      <h5>prompt (user)</h5><pre>${esc(c.prompt)}</pre>
+      ${c.schema ? `<details><summary>schema JSON imposto (response_format)</summary>${pre(c.schema)}</details>` : ""}
+    </div><div>
+      ${c.error ? `<h5>errore</h5><pre style="color:var(--red)">${esc(c.error)}</pre>` : ""}
+      ${c.reasoning ? `<details><summary>ragionamento del modello (${c.reasoning_tokens ?? "?"} token)</summary><pre>${esc(c.reasoning)}</pre></details>` : ""}
+      <h5>risposta</h5>${resp ? pre(resp) : `<pre>${esc(c.response ?? "")}</pre>`}
+    </div></div></div>`;
+}
+["#cl_model", "#cl_method", "#cl_name"].forEach(s => $(s).onchange = renderCalls);
+$("#cl_q").oninput = renderCalls;
+$("#run-incidenti").onclick = () => {
+  RESET.incidenti();
+  const modelli = [...document.querySelectorAll("#in_models input:checked")].map(i => i.value);
+  if (!modelli.length) return alert("Seleziona almeno un modello");
+  const sc = $("#in_scala").value, ds = sc.startsWith("ds:") ? sc.slice(3) : "";
+  run("incidenti", { scala: ds ? "medio" : sc, dataset: ds, n: +$("#in_n").value, max_tokens: +$("#in_maxtok").value,
+    timeout: +$("#in_timeout").value, campione: $("#in_campione").value.trim(),
+    metodi: ["S", "A", "B", "C"].filter(m => $("#in_" + m).checked).join(""), judge: $("#in_judge").checked, modelli },
+    inEvent, $("#run-incidenti"));
+};
+
+// ---------------------------------------------------------------- CODICE & PROMPT
+let SRC = null;
+function hlPy(src) {
+  const KW = /\b(def|class|return|if|elif|else|for|while|in|import|from|as|with|try|except|finally|raise|lambda|yield|not|and|or|is|None|True|False|pass|break|continue|global|nonlocal|async|await|del)\b/g;
+  let triple = null;
+  return src.split("\n").map(line => {
+    let out = "", i = 0;
+    const plain = s => esc(s).replace(KW, '<span class="py-k">$1</span>').replace(/(@\w+)/g, '<span class="py-d">$1</span>');
+    while (i < line.length) {
+      if (triple) {
+        const j = line.indexOf(triple, i);
+        if (j < 0) { out += `<span class="py-s">${esc(line.slice(i))}</span>`; i = line.length; }
+        else { out += `<span class="py-s">${esc(line.slice(i, j + 3))}</span>`; i = j + 3; triple = null; }
+        continue;
+      }
+      const rest = line.slice(i);
+      const m = rest.match(/#|"""|'''|[rbfu]{0,2}"(?:\\.|[^"\\])*"|[rbfu]{0,2}'(?:\\.|[^'\\])*'/i);
+      if (!m) { out += plain(rest); break; }
+      out += plain(rest.slice(0, m.index));
+      const tok = m[0];
+      if (tok === "#") { out += `<span class="py-c">${esc(rest.slice(m.index))}</span>`; break; }
+      if (tok === '"""' || tok === "'''") { triple = tok; out += `<span class="py-s">${tok}</span>`; i += m.index + 3; continue; }
+      out += `<span class="py-s">${esc(tok)}</span>`; i += m.index + tok.length;
+    }
+    return out;
+  });
+}
+async function loadSource() {
+  if (SRC) return;
+  SRC = (await (await fetch("/api/source")).json()).files;
+  $("#src_files").innerHTML = SRC.map(f => `<div class="fitem" data-f="${esc(f.path)}"><code>${esc(f.path)}</code>
+    <span class="small">${f.righe} righe · ${f.kb} KB${f.simboli.length ? ` · ${f.simboli.length} funzioni/classi` : ""}</span>
+    ${f.doc ? `<span class="small">${esc(f.doc.split("\n")[0].slice(0, 110))}</span>` : ""}</div>`).join("");
+  document.querySelectorAll(".fitem").forEach(d => d.onclick = () => openFile(d.dataset.f));
+  loadPrompts();
+  openFile("incidenti.py");
+}
+async function openFile(path, symbol) {
+  document.querySelectorAll(".fitem").forEach(d => d.classList.toggle("sel", d.dataset.f === path));
+  const f = SRC.find(x => x.path === path); if (!f) return;
+  const r = await (await fetch("/api/source?file=" + encodeURIComponent(path))).json();
+  const lines = path.endsWith(".py") ? hlPy(r.text) : r.text.split("\n").map(esc);
+  $("#src_title").innerHTML = `${esc(path)} <span class="tag">${f.righe} righe</span>`;
+  $("#src_outline").innerHTML = f.simboli.map(s => `<span data-l="${s.riga}" title="${esc(s.doc)}">${s.tipo} ${esc(s.nome)}</span>`).join("");
+  $("#src_view").innerHTML = `<div class="code">${lines.map((l, i) => `<div id="L${i + 1}"><span class="ln">${i + 1}</span><span>${l || " "}</span></div>`).join("")}</div>`;
+  const go = n => { const t = $("#L" + n); if (!t) return; document.querySelectorAll(".code .hl").forEach(x => x.classList.remove("hl"));
+    t.classList.add("hl"); t.parentElement.scrollTop = t.offsetTop - 40; };
+  document.querySelectorAll("#src_outline span").forEach(s => s.onclick = () => go(+s.dataset.l));
+  if (symbol) {  // "classifica" o ["Agent", "run"]: salta al primo simbolo trovato
+    const s = [].concat(symbol).map(n => f.simboli.find(x => x.nome === n)).find(Boolean);
+    if (s) go(s.riga);
+  }
+}
+async function loadPrompts() {
+  const ps = (await (await fetch("/api/prompts")).json()).prompts;
+  const groups = {};
+  ps.forEach(p => (groups[p.benchmark] ??= []).push(p));
+  $("#prompts").innerHTML = Object.entries(groups).map(([b, list]) => `<h4 style="margin:14px 0 4px">${esc(b)}</h4>` +
+    list.map((p, k) => `<div class="card prompt-card"><h4>${p.metodo !== "-" ? `<span class="mtag ${p.metodo}" style="width:18px;height:18px;font-size:11px">${p.metodo}</span>` : ""}
+      ${esc(p.ruolo)} <span class="tag link" data-fn="${esc(p.funzione)}" style="cursor:pointer">${esc(p.funzione)}</span>
+      <span class="tag">schema: ${esc(p.schema_name)}</span></h4>
+      ${p.system ? `<h5>system</h5><pre>${esc(p.system)}</pre>` : `<p class="note">nessun system prompt</p>`}
+      <h5>prompt (user)</h5><pre>${esc(p.prompt)}</pre>
+      ${p.tools?.length ? `<p class="note">tool disponibili: ${p.tools.map(esc).join(", ")}</p>` : ""}
+      ${p.schema ? `<details><summary>schema JSON imposto</summary>${pre(p.schema)}</details>` : ""}
+      <details><summary>esempio di risposta (modello finto)</summary><pre>${esc(p.esempio_risposta ?? "")}</pre></details></div>`).join("")).join("");
+  document.querySelectorAll("[data-fn]").forEach(t => t.onclick = () => {
+    const [file, fn] = t.dataset.fn.split(" · ");
+    openFile(file.trim(), (fn || "").split("(")[0].split(".").map(s => s.trim()));
+    $("#tab-codice").scrollIntoView();
+  });
+}
+document.querySelector("nav button[data-tab=codice]").addEventListener("click", loadSource);
+
+// ---------------------------------------------------------------- STORICO
+const DEMO_LABEL = { agente: "Agente", anatomia: "Anatomia", json: "Schema JSON", confronto: "Confronto",
+                     lunghi: "JSON lunghi", incidenti: "Incidenti SOC" };
+const RESET = {
+  agente: () => { $("#timeline").innerHTML = ""; stack = [$("#timeline")]; stats = { steps: 0, calls: 0, tok: 0 }; $("#ag-stats").innerHTML = ""; $("#sysbox").hidden = true; },
+  anatomia: () => { $("#anat").innerHTML = ""; anatN = 0; },
+  json: () => { $("#jsres").innerHTML = ""; },
+  confronto: () => { $("#tA").innerHTML = $("#tB").innerHTML = $("#cf_truth").innerHTML = ""; $("#cf_summary").hidden = true;
+    agg = { A: { n: 0, ok: 0, sec: 0, tok: 0 }, B: { n: 0, ok: 0, sec: 0, tok: 0, retry: 0 } }; },
+  lunghi: () => { lj = { results: [], blocks: {} }; $("#lj_rows").innerHTML = $("#lj_truth").innerHTML = "";
+    $("#lj_pipe").hidden = $("#lj_summary").hidden = $("#lj_bench").hidden = true; },
+  incidenti: () => { inc = { results: [], calls: [], lanes: {}, sel: null }; $("#in_corpus").innerHTML = $("#in_rows").innerHTML = "";
+    $("#in_lanes").innerHTML = $("#cl_rows").innerHTML = $("#cl_detail").innerHTML = "";
+    $("#in_bench").hidden = $("#in_live").hidden = $("#in_cmp").hidden = $("#in_calls_card").hidden = true; },
+};
+const HANDLER = { agente: e => agentEvent(e), anatomia: e => anatEvent(e), json: e => jsonEvent(e),
+                  confronto: e => confrontoEvent(e), lunghi: e => ljEvent(e), incidenti: e => inEvent(e) };
+let H = [];
+let FOLLOW = null;  // run in corso che stiamo seguendo: {id, demo, n, timer}
+
+function mlabel(m, full = true) {
+  if (!m || m.id === "mock") return `<span class="mbadge mock">mock</span>`;
+  if (m.models) return m.models.map(x => mlabel(x, full)).join(" + ");
+  const extra = full ? [m.quantization, m.loaded_context_length && `ctx ${Math.round(m.loaded_context_length / 1024)}k`].filter(Boolean).join(" · ") : "";
+  return `<span class="mbadge local" title="${esc(JSON.stringify(m))}">${esc(m.id)}</span>${extra ? ` <span class="small">${esc(extra)}</span>` : ""}`;
+}
+const when = s => new Date(s).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const dur = s => s == null ? "—" : s < 90 ? `${s.toFixed(1)} s` : `${(s / 60).toFixed(1)} min`;
+const STATUS = { running: `<span class="ok-t">● in corso</span>`, done: "finito", interrupted: `<span class="ko-t">interrotto</span>`,
+  stopped: `<span class="ko-t">fermato</span>` };
+
+// mode: "live" = lanciato da questa pagina · "replay" = finito, dallo storico · "follow" = in corso, seguito dal disco
+function showBanner(demo, r, mode) {
+  if (mode === true) mode = "replay";
+  if (mode === false) mode = "live";
+  removeBanner(demo);
+  const b = el("div", "runbanner" + (mode === "live" ? "" : " replay"));
+  b.id = "banner-" + demo;
+  const titolo = { live: "Run in corso", replay: "Run dallo storico", follow: "Run in corso · seguito dal vivo" }[mode];
+  b.innerHTML = `<b>${titolo}</b>${mode === "follow" ? ' <span class="spinner"></span>' : ""}<span>${when(r.started_at)}</span>
+    <span>modello: ${mlabel(r.model)}</span>
+    ${r.source ? `<span class="small">origine: ${esc(r.source)}</span>` : ""}
+    <span class="small grow">${mode === "live" ? "salvato nello storico come " : ""}<code>${esc(r.id)}</code>
+      ${mode !== "live" && r.duration_sec != null ? ` · ${mode === "follow" ? "da" : "durata"} ${dur(r.duration_sec)}` : ""}
+      ${mode === "follow" ? ` · ${r.n_events} eventi · si aggiorna ogni 2 s, puoi ricaricare la pagina` : ""}
+      ${mode === "replay" && r.status === "interrupted" ? ` · <span class="ko-t">interrotto prima della fine</span>` : ""}
+      ${mode === "replay" && r.status === "stopped" ? ` · <span class="ko-t">fermato con Stop</span>` : ""}</span>
+    ${mode !== "replay" ? `<button class="stopbtn mini" title="Ferma il run: le prove già finite restano nello storico">■ Stop</button>` : ""}
+    ${mode !== "live" ? `<button class="ghost mini closebtn">chiudi</button>` : ""}`;
+  if (mode !== "live") b.querySelector(".closebtn").onclick = () => { stopFollow(); removeBanner(demo); RESET[demo](); };
+  const sb = b.querySelector(".stopbtn");
+  if (sb) sb.onclick = async () => {
+    if (!confirm("Fermare il run? Le prove già finite restano nello storico.")) return;
+    sb.disabled = true; sb.innerHTML = '<span class="spinner"></span> fermo…';
+    const res = await (await fetch("/api/stop", { method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ id: r.id }) })).json();
+    if (!res.ok) { alert(res.error); sb.disabled = false; sb.textContent = "■ Stop"; }
+  };
+  $("#tab-" + demo).prepend(b);
+}
+function removeBanner(demo) { $("#banner-" + demo)?.remove(); }
+
+function paramsShort(r) {
+  const p = r.params || {};
+  if (r.demo === "incidenti") return `corpus ${p.dataset ? "dataset " + p.dataset : p.scala} · metodi ${p.metodi}${p.judge ? " · giudice" : ""}${p.modelli?.length > 1 ? ` · ${p.modelli.length} modelli in parallelo` : ""}`;
+  if (r.demo === "lunghi") return `${p.righe} righe · ${p.n} prove · metodi ${p.metodi} · blocchi da ${p.chunk}${p.judge ? " · giudice" : ""}${p.judge_ab ? " (+A/B)" : ""}`;
+  if (r.demo === "confronto") return `${p.righe} righe · ${p.n} prove${p.solo_b ? " · solo B" : ""}`;
+  if (r.demo === "agente") return `max_steps ${p.max_steps ?? 10} · max_tokens ${p.max_tokens ?? "—"}`;
+  if (r.demo === "json") return (p.modes || ["prompt", "constrained"]).join(" + ");
+  return "";
+}
+function summaryShort(r) {
+  const s = r.summary || {};
+  if (r.demo === "incidenti") return (s.risultati || []).map(x =>
+    `<span class="mtag ${x.method}" style="width:18px;height:18px;font-size:11px">${x.method}</span>
+     <span class="small">${esc((x.model || "").split("/").pop())}</span>
+     ${x.error ? `<span class="ko-t" style="font-weight:400">errore</span>` : x.det == null ? "non valutato" : `det ${x.det}% · cat ${x.sem}% · der ${x.der}%`} · ${dur(x.sec)}`).join("<br>")
+    || (r.status === "running" ? "in corso…" : "");
+  if (r.error) return `<span class="ko-t" style="font-weight:400">errore: ${esc(r.error.slice(0, 80))}</span>`;
+  if (s.metodi) return Object.entries(s.metodi).map(([m, v]) =>
+    `<span class="mtag ${m}" style="width:18px;height:18px;font-size:11px">${m}</span>
+     <span class="${v.esatti === v.prove ? "ok-t" : "ko-t"}">${v.esatti}/${v.prove}</span>
+     ${v.campi_pct != null ? `${v.campi_pct}%` : ""} · ${dur(v.sec)}`).join("<br>");
+  if (r.demo === "agente") return `${s.completato ? "✓" : "✗"} ${s.passi} passi · ${s.tool_call} tool call · ${s.sub_agenti} sub-agenti · ${s.token} tok`;
+  if (r.demo === "json") return Object.entries(s.modi || {}).map(([m, v]) => `${m}: <span class="${v.valido ? "ok-t" : "ko-t"}">${v.valido ? "valido" : "fallito"}</span> (${v.tentativi} tent.)`).join("<br>");
+  if (r.demo === "anatomia") return s.tool_chiamato ? "tool chiamato ✓" : "nessuna tool call";
+  return "";
+}
+function renderHistory() {
+  const d = $("#h_demo").value, m = $("#h_model").value, q = $("#h_q").value.toLowerCase();
+  const rows = H.filter(r => (!d || r.demo === d) && (!m || (r.model?.id || "mock") === m) &&
+    (!q || JSON.stringify(r).toLowerCase().includes(q)));
+  $("#h_rows").innerHTML = rows.map(r => `<tr class="hrow" data-open="${esc(r.id)}" title="Clicca per aprire il run">
+    <td>${when(r.started_at)}<br><span class="small">${STATUS[r.status] || ""}</span></td><td>${DEMO_LABEL[r.demo] || r.demo}</td><td>${mlabel(r.model)}</td>
+    <td class="small">${esc(r.source || "")}</td><td class="wrap small">${esc(paramsShort(r))}</td>
+    <td class="wrap">${summaryShort(r)}</td><td>${dur(r.duration_sec)}</td>
+    <td><button class="mini">${r.status === "running" ? "Segui" : "Apri"}</button></td></tr>`).join("") ||
+    `<tr><td colspan="8" class="note">Nessun run${H.length ? " con questi filtri" : ": esegui una demo e comparirà qui"}.</td></tr>`;
+  $("#h_count").textContent = `${rows.length} di ${H.length} run · salvati in data/runs/ · clicca una riga per aprirla`;
+  document.querySelectorAll("tr.hrow").forEach(tr => tr.onclick = () => replay(tr.dataset.open));
+}
+async function loadHistory() {
+  H = (await (await fetch("/api/runs")).json()).runs;
+  const fill = (sel, vals, lab) => { const cur = sel.value; sel.innerHTML = `<option value="">${lab}</option>` +
+    vals.map(v => `<option value="${esc(v)}">${esc(DEMO_LABEL[v] || v)}</option>`).join(""); sel.value = vals.includes(cur) ? cur : ""; };
+  fill($("#h_demo"), [...new Set(H.map(r => r.demo))], "tutte");
+  fill($("#h_model"), [...new Set(H.map(r => r.model?.id || "mock"))], "tutti");
+  renderHistory();
+  resumeBanner();
+}
+function feed(demo, events) {
+  for (const ev of events) {
+    if (ev.type === "run_info" || ev.type === "end") continue;
+    try { HANDLER[demo](ev); } catch (e) { console.warn("replay", ev.type, e); }
+  }
+}
+function stopFollow() { if (FOLLOW) { clearTimeout(FOLLOW.timer); FOLLOW = null; } }
+async function followTick() {
+  if (!FOLLOW) return;
+  const f = FOLLOW;
+  try {
+    const r = await (await fetch(`/api/runs/${encodeURIComponent(f.id)}?from=${f.n}`)).json();
+    if (FOLLOW !== f || r.error) return;
+    feed(f.demo, r.events);
+    f.n = r.n_events;
+    if (r.status === "running") {
+      showBanner(f.demo, r, "follow");
+      f.timer = setTimeout(followTick, 2000);
+    } else {
+      showBanner(f.demo, r, "replay");
+      stopFollow();
+      resumeBanner();
+    }
+  } catch (e) {
+    f.timer = setTimeout(followTick, 4000);  // server momentaneamente non raggiungibile: riprova
+  }
+}
+async function replay(id) {
+  stopFollow();
+  const r = await (await fetch("/api/runs/" + encodeURIComponent(id))).json();
+  if (r.error) return alert(r.error);
+  if (!RESET[r.demo]) return alert("Demo non riconosciuta: " + r.demo);
+  document.querySelector(`nav button[data-tab=${r.demo}]`).click();
+  RESET[r.demo]();
+  const p = r.params || {};  // rimetti i parametri nei campi, per sapere con cosa era stato lanciato
+  const set = (sel, v) => { if (v != null && $(sel)) { if ($(sel).type === "checkbox") $(sel).checked = !!v; else $(sel).value = v; } };
+  if (r.demo === "agente") { set("#task", p.task); set("#max_steps", p.max_steps); set("#ag_maxtok", p.max_tokens); set("#ag_righe", p.righe); }
+  if (r.demo === "confronto") { set("#cf_righe", p.righe); set("#cf_n", p.n); set("#cf_solo_b", p.solo_b); set("#cf_maxtok", p.max_tokens); }
+  if (r.demo === "lunghi") { set("#lj_righe", p.righe); set("#lj_n", p.n); set("#lj_chunk", p.chunk); set("#lj_maxtok", p.max_tokens);
+    set("#lj_judge", p.judge); set("#lj_judge_ab", p.judge_ab); for (const m of "ABC") set("#lj_" + m, (p.metodi || "ABC").includes(m)); }
+  if (r.demo === "incidenti") { set("#in_scala", p.dataset ? "ds:" + p.dataset : p.scala); set("#in_n", p.n); set("#in_maxtok", p.max_tokens); set("#in_judge", p.judge);
+    set("#in_campione", p.campione ?? "");
+    for (const m of "SABC") set("#in_" + m, (p.metodi || "SABC").includes(m)); }
+  if (r.demo === "json") { set("#js_text", p.text); set("#js_schema", p.schema); }
+  if (r.demo === "anatomia") set("#an_prompt", p.prompt);
+  feed(r.demo, r.events);
+  if (r.status === "running") {                 // ancora in corso: continua a leggere i nuovi eventi
+    showBanner(r.demo, r, "follow");
+    FOLLOW = { id: r.id, demo: r.demo, n: r.n_events, timer: setTimeout(followTick, 2000) };
+  } else {
+    showBanner(r.demo, r, "replay");
+  }
+}
+// banner globale: run in corso (anche lanciati da riga di comando) da riprendere dopo un reload
+async function resumeBanner() {
+  let runs = H;
+  if (!runs.length) { try { runs = (await (await fetch("/api/runs")).json()).runs; } catch { return; } }
+  const running = runs.filter(r => r.status === "running" && (!FOLLOW || FOLLOW.id !== r.id));
+  $("#resume")?.remove();
+  if (!running.length) return;
+  const b = el("div", "runbanner");
+  b.id = "resume";
+  b.style.margin = "12px 20px 0";
+  b.innerHTML = `<b>${running.length} run in corso</b>` + running.map(r =>
+    `<span>${DEMO_LABEL[r.demo] || r.demo} · ${mlabel(r.model, false)} · avviato ${when(r.started_at)} (${esc(r.source)})
+     <button class="mini" data-follow="${esc(r.id)}">Segui</button></span>`).join("");
+  document.querySelector("nav").after(b);
+  b.querySelectorAll("[data-follow]").forEach(x => x.onclick = () => { b.remove(); replay(x.dataset.follow); });
+}
+$("#h_refresh").onclick = loadHistory;
+["#h_demo", "#h_model"].forEach(s => $(s).onchange = renderHistory);
+$("#h_q").oninput = renderHistory;
+document.querySelector("nav button[data-tab=storico]").addEventListener("click", loadHistory);
+
+// ---------------------------------------------------------------- PROVIDER E DATI
+let PV = [];
+const pvRow = (p, i) => `<tr data-i="${i}"><td><input type="checkbox" class="pv_en" ${p.enabled ? "checked" : ""}></td>
+  <td><input class="pv_name" value="${esc(p.name)}" size="12"></td><td><input class="pv_url" value="${esc(p.base_url)}" size="34"></td>
+  <td><input class="pv_env" value="${esc(p.api_key_env || "")}" size="18" placeholder="nessuna">
+    ${p.api_key_env ? (p.api_key_set ? `<span class="ok-t" title="variabile impostata">✓</span>` : `<span class="ko-t" title="variabile non impostata nell'ambiente della web UI">✗</span>`) : ""}</td>
+  <td><input class="pv_models" value="${esc((p.models || []).join(", "))}" size="28"></td>
+  <td><button class="ghost pv_del" title="Rimuovi">✕</button></td></tr>`;
+function drawProviders() {
+  $("#pv_rows").innerHTML = PV.map(pvRow).join("");
+  document.querySelectorAll(".pv_del").forEach(b => b.onclick = () => { readProviders(); PV.splice(+b.closest("tr").dataset.i, 1); drawProviders(); });
+}
+function readProviders() {
+  PV = [...document.querySelectorAll("#pv_rows tr")].map(tr => {
+    const v = c => tr.querySelector(c).value.trim();
+    const p = { name: v(".pv_name"), base_url: v(".pv_url"), enabled: tr.querySelector(".pv_en").checked };
+    if (v(".pv_env")) p.api_key_env = v(".pv_env");
+    const ms = v(".pv_models").split(",").map(x => x.trim()).filter(Boolean);
+    if (ms.length) p.models = ms;
+    return p;
+  });
+}
+async function loadProviders() {
+  const r = await (await fetch("/api/providers")).json();
+  PV = r.providers; drawProviders();
+  $("#pv_msg").textContent = r.salvato ? `da ${r.file}` : "valori di esempio (providers.example.json): premi Salva per creare providers.json";
+}
+$("#pv_add").onclick = () => { readProviders(); PV.push({ name: "", base_url: "http://localhost:8000/v1", enabled: true }); drawProviders(); };
+$("#pv_save").onclick = async () => {
+  readProviders();
+  const r = await (await fetch("/api/providers", { method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ providers: PV }) })).json();
+  if (!r.ok) { $("#pv_msg").innerHTML = `<span class="ko-t">${esc(r.error)}</span>`; return; }
+  PV = r.providers; drawProviders();
+  $("#pv_msg").innerHTML = `<span class="ok-t">salvato: ${r.n} provider</span>`;
+  $("#base_url").value = PV.filter(p => p.enabled).map(p => p.base_url).join(", ");
+  localStorage.oh_base = $("#base_url").value; loadModels();
+};
+async function loadDatasets() {
+  const r = await (await fetch("/api/datasets")).json();
+  $("#in_ds").innerHTML = r.datasets.map(d => `<option value="ds:${esc(d.nome)}">${esc(d.nome)} · ${d.incidenti} incidenti${d.etichettato ? "" : " · senza etichette"}</option>`).join("");
+  $("#ds_rows").innerHTML = r.datasets.map(d => `<tr><td>${esc(d.nome)}</td><td>${d.incidenti}</td><td>${d.etichettato ? "sì" : "no"}</td>
+    <td class="small">${d.file.map(esc).join(", ")}</td></tr>`).join("") || `<tr><td colspan="4" class="note">nessun dataset</td></tr>`;
+}
+$("#ds_up").onclick = async () => {
+  const files = {};
+  for (const f of $("#ds_files").files) files[f.name] = await f.text();
+  if (!Object.keys(files).length) return $("#ds_msg").textContent = "scegli almeno un file";
+  const r = await (await fetch("/api/datasets", { method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ nome: $("#ds_nome").value.trim(), files, sovrascrivi: $("#ds_over").checked }) })).json();
+  $("#ds_msg").innerHTML = r.ok ? `<span class="ok-t">caricato: ${esc(r.dataset.nome)} · ${r.dataset.incidenti} incidenti</span>`
+                                : `<span class="ko-t">${esc(r.error)}</span>`;
+  if (r.ok) loadDatasets();
+};
+document.querySelector("nav button[data-tab=config]").addEventListener("click", () => { loadProviders(); loadDatasets(); });
+
+// ---------------------------------------------------------------- init
+let defaults = {};
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button, .tab").forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); $("#tab-" + b.dataset.tab).classList.add("active");
+  localStorage.oh_tab = b.dataset.tab;  // dopo un reload si riapre la stessa scheda
+});
+$("#rawtoggle").onchange = e => document.body.classList.toggle("show-raw", e.target.checked);
+$("#backend").onchange = syncBackendUI;
+$("#refresh").onclick = loadModels;
+$("#base_url").onchange = () => { localStorage.oh_base = $("#base_url").value; loadModels(); };
+$("#model").onchange = () => localStorage.oh_model = $("#model").value;
+(async () => {
+  defaults = await (await fetch("/api/defaults")).json();
+  $("#task").value = defaults.task; $("#js_text").value = defaults.text; $("#js_schema").value = defaults.schema;
+  $("#base_url").value = localStorage.oh_base || defaults.base_url;
+  loadDatasets();
+  $("#backend").value = localStorage.oh_backend || "mock";
+  syncBackendUI();
+  document.querySelector(`nav button[data-tab="${localStorage.oh_tab}"]`)?.click();
+  resumeBanner();  // run in corso (lanciati prima del reload o da riga di comando)
+})();
+</script>
+</body>
+</html>
