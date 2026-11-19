@@ -9,8 +9,6 @@ Serve soprattutto a dimostrare una tesi:
 
 Usa solo la libreria standard di Python, senza dipendenze. Parla con qualsiasi server **OpenAI-compatibile**: LM Studio, Ollama, llama.cpp, vLLM, SGLang.
 
-La nota tecnica con metodologia, risultati e analisi degli errori è in [`docs/inc-bench_nota_tecnica.pdf`](docs/inc-bench_nota_tecnica.pdf).
-
 ---
 
 ## Avvio rapido
@@ -158,7 +156,6 @@ history.py       storico dei run (data/runs/*.json): modello, parametri, riepilo
 webui.py         server web (http.server + Server-Sent Events)
 webui/index.html la pagina: HTML + CSS + JS vanilla, nessuna build
 datasets/        dataset per il benchmark Incidenti (esempio/ incluso)
-docs/            nota tecnica (PDF)
 tests/           test senza modello (python -m unittest)
 ```
 
@@ -390,7 +387,7 @@ Senza queste regole, nella run dell'11/11 tutti gli errori di categoria di C era
 Nella UI c'è la tabella "Tutte le chiamate LLM", con filtri per modello, metodo, ruolo e testo; clicca una riga per leggerla tutta.
 Ogni risultato riporta tempo di completamento, latenza media e p95 e tok/s.
 
-**Primi risultati** (corpus "medio", 11/11/2026, due modelli in parallelo). Le run successive, con le regole di confine corrette e più prove, sono nella nota tecnica in `docs/`:
+**Primi risultati** (corpus "medio", 11/11/2026, due modelli in parallelo):
 
 | Metodo | Qwen 3.6 35B-A3B (ctx 128k, PC locale) | Qwen 3.8 27B Q8 (ctx 152k, PC remoto) |
 |---|---|---|
@@ -437,4 +434,4 @@ I run vengono salvati su disco **mentre girano** (ogni ~3 s, stato "in corso"), 
 
 ## Licenza
 
-MIT, vedi [`LICENSE`](LICENSE). La nota tecnica in `docs/` incorpora i font Familjen Grotesk, DM Sans e JetBrains Mono (SIL Open Font License).
+MIT, vedi [`LICENSE`](LICENSE).
